@@ -1,0 +1,59 @@
+# AESA Radar Lab
+
+Interactive exploded-view visualisation of a traditional AESA (active electronically scanned
+array) radar, in the style of the "Astra engine" lab at ivanainai.com: one Three.js WebGL scene,
+procedural geometry only, a single explode scalar that spreads the ten-layer component stack,
+and an HTML/CSS overlay HUD.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # production bundle in dist/
+```
+
+## What it shows
+
+- **Component stack** (front to back): radome, radiating element array (24 × 24 elements),
+  T/R module layer, cold plate, RF manifold / beamformer, beam steering controller,
+  receiver-exciter, signal & data processor, power conditioning, backplane & chassis.
+  The explode slider (or `E`) spreads them along boresight with labels.
+- **View modes** (`1`–`4`): assembled, cutaway (geometry swap, no clipping planes), x-ray,
+  and signal path (animated RF chain in purple, beam-steering commands in teal).
+- **Beams**: a frustum from each subarray's phase centre. The search beam *hops* between
+  discrete positions with a dwell per position (no inertia — the defining AESA behaviour);
+  track beams re-point in 10 Hz jumps. Beamwidth broadens as 1/cos θ off boresight, gain
+  falls as cos^1.3 θ.
+- **Pulses**: travelling rings = wavefronts (a tilted plane at emission is the phased
+  wavefront); white dots = echoes returning from targets; detection fires when the echo is
+  received. Cells on the coverage dome get a faint wash while the beam points at them and a
+  full splash when a pulse ring arrives, with a fast "hot" layer and a slow trace.
+- **Scan patterns**: sector, 8-bar raster, circular (cued acquisition), spiral, agile
+  (pseudo-random hops interleaved with track dwells every 4th hop). The dashed pattern path
+  is drawn on the dome.
+- **Subarray tasking**: each quadrant can be search / track / standby. Search quadrants pool
+  into one beam; each track quadrant grows its own amber beam that acquires and follows a
+  target. The face-on aperture inset shows the per-element phase fringes in each quadrant's
+  mode colour.
+- **Failure simulation**: 15 % T/R module failures (gain loss + diffuse sidelobe floor, no beam
+  broadening), a noise jammer strobe, and an adaptive null.
+
+Visual exaggerations are stated in the HUD: beams drawn at 2× true width, 1 of ~100 pulses
+drawn, dwells ~10× slow.
+
+## Layout
+
+| File | Purpose |
+|---|---|
+| `SPEC.md` | The build contract every module follows |
+| `src/main.js` | Bootstrap, render loop, post-processing, aperture inset, wiring |
+| `src/sim/state.js` | `SimState` — the single mutable data holder |
+| `src/sim/targets.js` | Target kinematics and detection bookkeeping |
+| `src/radar/scan.js` | Constants, az/el helpers, scan patterns, beam scheduler |
+| `src/radar/elements.js` | Instanced aperture elements + T/R modules (phase fringes, failures) |
+| `src/radar/assembly.js` | Procedural component stack, explode, view modes, signal paths |
+| `src/radar/beams.js` | Beam frusta, pulse rings, echoes, jammer |
+| `src/radar/dome.js` | Coverage dome cells, pattern path, target markers |
+| `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
+
+`?dpr=1` in the URL forces a 1× pixel ratio for slower GPUs. `window.__lab` exposes the state
+and modules for debugging; `__lab.step(dt, n)` advances the simulation deterministically.
