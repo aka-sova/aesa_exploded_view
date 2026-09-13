@@ -160,7 +160,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 /* ---- tutorial ------------------------------------------------------------------------------- */
 .tut-btn { font: 600 10px var(--mono); letter-spacing: 0.12em; padding: 4px 10px; border-radius: 3px; color: var(--accent); border: 1px solid rgba(46, 230, 214, 0.5); }
 .tut-btn:hover, .tut-btn.active { background: rgba(46, 230, 214, 0.12); }
-#tutorial { top: 18px; left: 22px; width: 400px; max-width: calc(100% - 260px); max-height: calc(100% - 36px); pointer-events: auto; z-index: 3; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: rgba(7, 11, 16, 0.92); border: 1px solid rgba(46, 230, 214, 0.35); border-radius: 4px; backdrop-filter: blur(6px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); }
+#viewport > #tutorial { pointer-events: auto; }
+#tutorial { top: 18px; left: 22px; width: 400px; max-width: calc(100% - 260px); max-height: calc(100% - 36px); z-index: 3; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: rgba(7, 11, 16, 0.92); border: 1px solid rgba(46, 230, 214, 0.35); border-radius: 4px; backdrop-filter: blur(6px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); }
 #tutorial.hidden { display: none; }
 .tut-head { display: flex; justify-content: space-between; align-items: center; }
 .tut-x { border: 0; font-size: 18px; line-height: 1; color: var(--muted); padding: 0 4px; }
