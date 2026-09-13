@@ -38,6 +38,7 @@ const TEL_FMT = {
   hops: (v) => String(v), dwellMs: (v) => v.toFixed(0) + ' ' + t('unit.ms'), pulsesPerDwell: (v) => String(v),
   eirpLossDb: (v) => '−' + v.toFixed(1) + ' ' + t('unit.db'), arrayTempC: (v) => v.toFixed(1) + ' °C',
   pulsesSent: (v) => String(v), echoes: (v) => String(v), detected: (v) => String(v),
+  vUnambMs: (v) => '±' + v.toFixed(1) + ' ' + t('unit.mps'), blindSpeedMs: (v) => v.toFixed(1) + ' ' + t('unit.mps'),
 };
 
 function setText(el, s) { if (el && el.__t !== s) { el.__t = s; el.textContent = s; } }
@@ -140,7 +141,7 @@ export function mountPanel(state, api) {
     el.onchange = () => { state[key] = el.checked; };
     return () => { if (el.checked !== state[key]) el.checked = state[key]; };
   };
-  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts'), chk('rm-timeline', 'timelineVisible')];
+  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts'), chk('rm-timeline', 'timelineVisible'), chk('rd-map', 'rdMapVisible'), chk('mti', 'mti')];
   syncSliders.push(
     bind('spacing', () => state.spacingLambda, (v) => { state.spacingLambda = v; }, (v) => v.toFixed(2) + ' λ'),
     bind('taper', () => Math.round(state.taper * 100), (v) => { state.taper = v / 100; }, (v) => v + ' %'),
@@ -210,6 +211,13 @@ export function mountPanel(state, api) {
     for (const c of syncChecks) c();
     setClass($('pat-plot-wrap'), 'hidden', !state.patternCuts);
     setClass($('timeline-wrap'), 'hidden', !state.timelineVisible);
+    setClass($('rdmap-wrap'), 'hidden', !state.rdMapVisible);
+    {
+      const tm = state.telemetry;
+      setText($('pd-ambig'), t('pd.ambig', { v: tm.vUnambMs.toFixed(1), vb: tm.blindSpeedMs.toFixed(1), r: tm.unambRangeKm.toFixed(0) }));
+      setText($('pd-target'), tm.pdTargetId >= 0 ? t('pd.target', { id: tm.pdTargetId, vr: (tm.pdTargetVr > 0 ? '+' : '') + tm.pdTargetVr.toFixed(0), fv: (tm.pdTargetFv > 0 ? '+' : '') + tm.pdTargetFv.toFixed(1) }) : t('pd.none'));
+      setText($('rd-readout'), t('rd.readout', { prf: state.prf, v: tm.vUnambMs.toFixed(1), r: tm.unambRangeKm.toFixed(0), mti: t(state.mti ? 'rd.on' : 'rd.off') }));
+    }
     {
       const tm = state.telemetry;
       setText($('rm-load'), t('rm.load', { s: tm.rmSearchPct.toFixed(0), t: tm.rmTrackPct.toFixed(0), c: tm.rmConfirmPct.toFixed(0) }));

@@ -248,3 +248,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 #rm-load, #rm-tracks { color: var(--text); }
 #timeline-wrap { right: 14px; bottom: 14px; width: 38%; min-width: 320px; max-width: 620px; padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 2px; }
 #timeline-wrap canvas { display: block; }
+
+/* ---- range–Doppler map (top-right column, under the aperture inset) ---------------------- */
+#rdmap-wrap { right: 14px; top: 226px; width: 200px; padding: 5px 8px 4px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 3px; }
+#rdmap-wrap canvas { display: block; }
+#doppler-block { display: flex; flex-direction: column; gap: 7px; }
+#doppler-block h6 { margin-bottom: 3px; }
+#pd-ambig, #pd-target { color: var(--text); }

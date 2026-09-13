@@ -65,6 +65,14 @@
         <div id="rm-overload" class="warn hidden" data-i18n="rm.overload">OVERLOAD — LOWEST-PRIORITY TRACK DROPPED</div>
         <div class="micro dim" data-i18n="rm.hint">PRIORITY: CONFIRM > TRACK UPDATE > SEARCH · SEARCH ONLY ADVANCES IN ITS OWN DWELLS</div>
       </section>
+      <section id="doppler-block">
+        <h6 data-i18n="pd.title">06 PULSE-DOPPLER</h6>
+        <label class="chk"><input type="checkbox" id="rd-map" /><span class="box"></span><span data-i18n="pd.map">RANGE–DOPPLER MAP</span></label>
+        <label class="chk"><input type="checkbox" id="mti" /><span class="box"></span><span data-i18n="pd.mti">MTI CLUTTER FILTER</span></label>
+        <div id="pd-ambig" class="micro"></div>
+        <div id="pd-target" class="micro"></div>
+        <div class="micro dim" data-i18n="pd.hint">X-BAND, LOW PRF: RANGE UNAMBIGUOUS, DOPPLER FOLDED INTO ±PRF·λ/4 · MTI NOTCHES ZERO DOPPLER AND EVERY BLIND SPEED</div>
+      </section>
     </aside>
 
     <main id="viewport">
@@ -81,6 +89,7 @@
         <div class="hint" data-i18n="vp.hint">DRAG TO ORBIT · SCROLL TO ZOOM · CLICK TO INSPECT</div>
       </div>
       <div id="inset"><span class="micro" data-i18n="vp.inset">APERTURE · FROM FRONT</span></div>
+      <div id="rdmap-wrap"><span class="micro" data-i18n="rd.title">RANGE–DOPPLER · CURRENT DWELL</span><canvas id="rdmap"></canvas><span id="rd-readout" class="micro dim"></span></div>
       <div id="timeline-wrap"><span class="micro" data-i18n="rm.timeline">DWELL TIMELINE</span><canvas id="timeline"></canvas></div>
       <div id="tutorial" class="hidden">
         <div class="tut-head"><span id="tut-step" class="micro accent"></span><button id="tut-close" class="tut-x" aria-label="Exit tutorial">×</button></div>
@@ -128,6 +137,8 @@
           <div class="tel-row"><span class="k" data-i18n="tel.arrayTempC">ARRAY TEMP</span><span class="v" data-tel="arrayTempC"></span></div>
           <div class="tel-row"><span class="k" data-i18n="tel.pulsesSent">PULSES SENT</span><span class="v" data-tel="pulsesSent"></span></div>
           <div class="tel-row"><span class="k" data-i18n="tel.echoes">ECHOES</span><span class="v" data-tel="echoes"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.vUnamb">UNAMBIG. VELOCITY</span><span class="v" data-tel="vUnambMs"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.blindSpeed">BLIND SPEED</span><span class="v" data-tel="blindSpeedMs"></span></div>
         </div>
         <div class="chart-wrap">
           <div class="micro dim"><span data-i18n="chart.az">BEAM AZ</span> <i class="sw teal"></i> · <span data-i18n="chart.el">EL</span> <i class="sw amber"></i> · <span data-i18n="chart.temp">TEMP</span> <i class="sw red"></i> · <span data-i18n="chart.window">60 s</span></div>

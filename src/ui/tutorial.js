@@ -27,6 +27,8 @@ function baseline(s, api) {
   s.trackRevisit = 1.0;
   s.trackLoadCap = 0.7;
   s.timelineVisible = true;
+  s.mti = false;
+  s.rdMapVisible = true;
 }
 
 const STEPS = [
@@ -38,6 +40,7 @@ const STEPS = [
   { id: 'beamwidth', highlight: ['[data-tel="beamwidthDeg"]', '[data-tel="scanLossDb"]'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.scanPattern = 'sector'; s.running = true; } },
   { id: 'pattern', highlight: ['#pattern-block'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.scanPattern = 'sector'; s.running = true; } },
   { id: 'pulses', highlight: ['#prf', '[data-tel="unambRangeKm"]'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.running = true; } },
+  { id: 'doppler', highlight: ['#doppler-block', '#rdmap-wrap'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.power = 100; s.selectedPart = 'sdp'; s.running = true; } },
   { id: 'dome', highlight: ['#scan-patterns'], apply(s, api) { baseline(s, api); api.setCameraPreset('dome'); s.running = true; } },
   { id: 'subarrays', highlight: ['#tiles'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.quadrantModes[3] = 'track'; s.running = true; } },
   { id: 'agile', highlight: ['#scan-patterns'], apply(s, api) { baseline(s, api); api.setCameraPreset('dome'); s.scanPattern = 'agile'; s.running = true; } },
@@ -49,7 +52,7 @@ const STEPS = [
   { id: 'thermal', highlight: ['[data-tel="arrayTempC"]', '#prf', '#power'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.prf = 4000; s.power = 100; s.selectedPart = 'coldplate'; s.running = true; } },
   { id: 'end', highlight: [], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.running = true; } },
 ];
-const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart', 'spacingLambda', 'taper', 'patternSearch', 'patternTrack', 'patternCuts', 'trackRevisit', 'trackLoadCap', 'timelineVisible'];
+const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart', 'spacingLambda', 'taper', 'patternSearch', 'patternTrack', 'patternCuts', 'trackRevisit', 'trackLoadCap', 'timelineVisible', 'mti', 'rdMapVisible'];
 
 export function mountTutorial(state, api) {
   const card = $('tutorial'), viewport = $('viewport');

@@ -16,6 +16,8 @@ import { createDome } from './radar/dome.js';
 import { createPatternView } from './radar/pattern.js';
 import { createPatternPlot } from './ui/patternplot.js';
 import { createTimeline } from './ui/timeline.js';
+import { createRdMap } from './ui/rdmap.js';
+import { computeRdMap, createRdSample, vUnamb, blindSpeed } from './radar/doppler.js';
 import { createTargets, updateTargets, markIlluminated } from './sim/targets.js';
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
@@ -207,6 +209,8 @@ onThemeChange((th) => {
 const chart = createStripChart(document.getElementById('strip-chart'));
 const patternPlot = createPatternPlot(document.getElementById('pattern-plot'));
 const timeline = createTimeline(document.getElementById('timeline'));
+const rdMap = createRdMap(document.getElementById('rdmap'));
+const rdSample = createRdSample();
 let patternVersion = -1;
 
 // ---- resize ------------------------------------------------------------------------------------
@@ -310,6 +314,15 @@ function tick(dt) {
   }
   labelRenderer.render(scene, camera);
   if (state.timelineVisible) timeline.draw(scheduler.manager, state.time, state);
+  t.vUnambMs = vUnamb(state.prf);
+  t.blindSpeedMs = blindSpeed(state.prf);
+  if (state.rdMapVisible) {
+    const primary = state.beams.length ? state.beams[0] : null;
+    computeRdMap(state, primary, state.targets, rdSample);
+    rdMap.draw(rdSample, state);
+    const s = rdSample.strongest;
+    t.pdTargetId = s ? s.id : -1; t.pdTargetVr = s ? s.vr : 0; t.pdTargetFv = s ? s.fv : 0;
+  }
 
   stats.calls = renderer.info.render.calls;
   frames++; fpsClock += dt;

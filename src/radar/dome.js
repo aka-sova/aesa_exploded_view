@@ -277,7 +277,7 @@ export function createDome(scene) {
         brackets[i].lookAt(0, 0, 0);
         label.obj.visible = true;
         label.obj.position.copy(_dir).y += 0.4;
-        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs }) + (tg.tws && !tg.tracked ? ' · ' + t('dome.tws') : '');
+        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs, vr: (tg.vr > 0 ? '+' : '') + tg.vr.toFixed(0) }) + (tg.tws && !tg.tracked ? ' · ' + t('dome.tws') : '');
         if (text !== label.text) { label.text = text; label.el.textContent = text; }
       } else {
         const age = Math.max(0, state.time - tg.lastSeen);

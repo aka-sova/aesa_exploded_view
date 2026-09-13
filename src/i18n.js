@@ -53,7 +53,7 @@ const en = {
   'fail.jam': 'SIMULATE JAMMING', 'fail.null': 'ADAPTIVE NULL',
   'fail.readout': 'EIRP −{db} dB · SIDELOBE FLOOR ≈ −35 dB', 'fail.nominal': 'ALL 576 MODULES NOMINAL',
   'foot.left': 'CONCEPTUAL ENGINEERING VISUALIZATION', 'foot.band': 'X-BAND 9.5 GHz / λ 31.6 mm /', 'foot.calls': 'CALLS /', 'foot.fps': 'FPS',
-  'dome.target': 'T{id} · {km} km · σ {rcs} m²',
+  'dome.target': 'T{id} · {km} km · σ {rcs} m² · {vr} m/s',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Smaller text', 'font.larger': 'Larger text', 'font.reset': 'Reset text size to 100 %',
   'pat.title': '04 ANTENNA PATTERN', 'pat.search': 'SEARCH BEAM LOBE (3-D)', 'pat.track': 'TRACK BEAM LOBES (3-D)', 'pat.cuts': 'AZ / EL CUTS',
@@ -63,6 +63,12 @@ const en = {
   'rm.load': 'SEARCH {s} % · TRACK {t} % · CONFIRM {c} %', 'rm.tracks': 'TWS TRACKS {n} · SEARCH FRAME {f}',
   'rm.overload': 'OVERLOAD — LOWEST-PRIORITY TRACK DROPPED', 'rm.hint': 'PRIORITY: CONFIRM > TRACK UPDATE > SEARCH · SEARCH ONLY ADVANCES IN ITS OWN DWELLS',
   'tl.pooled': 'B0 POOLED', 'tl.search': 'SEARCH', 'tl.track': 'TRACK', 'tl.confirm': 'CONFIRM', 'dome.tws': 'TWS',
+  'pd.title': '06 PULSE-DOPPLER', 'pd.map': 'RANGE–DOPPLER MAP', 'pd.mti': 'MTI CLUTTER FILTER',
+  'pd.ambig': 'V ±{v} m/s · BLIND EVERY {vb} m/s · Rᵤ {r} km', 'pd.target': 'T{id}: v_r {vr} m/s → SEEN AT {fv} m/s', 'pd.none': 'NO TARGET IN BEAM',
+  'pd.hint': 'X-BAND, LOW PRF: RANGE UNAMBIGUOUS, DOPPLER FOLDED INTO ±PRF·λ/4 · MTI NOTCHES ZERO DOPPLER AND EVERY BLIND SPEED',
+  'rd.title': 'RANGE–DOPPLER · CURRENT DWELL', 'rd.readout': 'PRF {prf} Hz · ±{v} m/s · Rᵤ {r} km · MTI {mti}', 'rd.on': 'ON', 'rd.off': 'OFF',
+  'rd.axisV': 'VELOCITY m/s', 'rd.axisR': 'RANGE km', 'rd.clutter': 'CLUTTER',
+  'tel.vUnamb': 'UNAMBIG. VELOCITY', 'tel.blindSpeed': 'BLIND SPEED', 'unit.mps': 'm/s',
   'theme.dark': 'DARK', 'theme.light': 'LIGHT', 'theme.title': 'Colour theme (the 3-D view stays dark: its glow is additive)',
 };
 
@@ -114,7 +120,7 @@ const ru = {
   'fail.jam': 'ИМИТАЦИЯ ПОМЕХ', 'fail.null': 'АДАПТИВНЫЙ НУЛЬ',
   'fail.readout': 'ЭИИМ −{db} дБ · УРОВЕНЬ БОКОВЫХ ≈ −35 дБ', 'fail.nominal': 'ВСЕ 576 МОДУЛЕЙ ИСПРАВНЫ',
   'foot.left': 'КОНЦЕПТУАЛЬНАЯ ИНЖЕНЕРНАЯ ВИЗУАЛИЗАЦИЯ', 'foot.band': 'X-ДИАПАЗОН 9,5 ГГц / λ 31,6 мм /', 'foot.calls': 'ВЫЗОВОВ /', 'foot.fps': 'К/С',
-  'dome.target': 'T{id} · {km} км · σ {rcs} м²',
+  'dome.target': 'T{id} · {km} км · σ {rcs} м² · {vr} м/с',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Мельче текст', 'font.larger': 'Крупнее текст', 'font.reset': 'Сбросить размер текста на 100 %',
   'pat.title': '04 ДИАГРАММА НАПРАВЛЕННОСТИ', 'pat.search': 'ЛЕПЕСТОК ОБЗОРНОГО ЛУЧА (3D)', 'pat.track': 'ЛЕПЕСТКИ ЛУЧЕЙ СОПР. (3D)', 'pat.cuts': 'СЕЧЕНИЯ ПО АЗ / УМ',
@@ -124,6 +130,12 @@ const ru = {
   'rm.load': 'ОБЗОР {s} % · СОПР. {t} % · ПОДТВ. {c} %', 'rm.tracks': 'ТРАСС СНП {n} · ЦИКЛ ОБЗОРА {f}',
   'rm.overload': 'ПЕРЕГРУЗКА — СБРОШЕНА ТРАССА С НИЗШИМ ПРИОРИТЕТОМ', 'rm.hint': 'ПРИОРИТЕТ: ПОДТВЕРЖДЕНИЕ > ОБНОВЛЕНИЕ ТРАССЫ > ОБЗОР · ОБЗОР ИДЁТ ТОЛЬКО В СВОИХ ДИСКРЕТАХ',
   'tl.pooled': 'B0 ОБЩИЙ', 'tl.search': 'ОБЗОР', 'tl.track': 'СОПР.', 'tl.confirm': 'ПОДТВ.', 'dome.tws': 'СНП',
+  'pd.title': '06 ИМПУЛЬСНО-ДОПЛЕРОВСКАЯ ОБРАБОТКА', 'pd.map': 'КАРТА ДАЛЬНОСТЬ–ДОПЛЕР', 'pd.mti': 'СДЦ (ФИЛЬТР ПОМЕХ ОТ ЗЕМЛИ)',
+  'pd.ambig': 'V ±{v} м/с · СЛЕПЫЕ КАЖДЫЕ {vb} м/с · Rодн {r} км', 'pd.target': 'T{id}: v_r {vr} м/с → ВИДИТСЯ КАК {fv} м/с', 'pd.none': 'ЦЕЛИ В ЛУЧЕ НЕТ',
+  'pd.hint': 'X-ДИАПАЗОН, НИЗКАЯ ЧПИ: ДАЛЬНОСТЬ ОДНОЗНАЧНА, ДОПЛЕР СВЁРНУТ В ±ЧПИ·λ/4 · СДЦ ВЫРЕЗАЕТ НУЛЕВОЙ ДОПЛЕР И КАЖДУЮ СЛЕПУЮ СКОРОСТЬ',
+  'rd.title': 'ДАЛЬНОСТЬ–ДОПЛЕР · ТЕКУЩИЙ ДИСКРЕТ', 'rd.readout': 'ЧПИ {prf} Гц · ±{v} м/с · Rодн {r} км · СДЦ {mti}', 'rd.on': 'ВКЛ', 'rd.off': 'ВЫКЛ',
+  'rd.axisV': 'СКОРОСТЬ м/с', 'rd.axisR': 'ДАЛЬНОСТЬ км', 'rd.clutter': 'ЗЕМЛЯ',
+  'tel.vUnamb': 'ОДНОЗН. СКОРОСТЬ', 'tel.blindSpeed': 'СЛЕПАЯ СКОРОСТЬ', 'unit.mps': 'м/с',
   'theme.dark': 'ТЁМНАЯ', 'theme.light': 'СВЕТЛАЯ', 'theme.title': 'Цветовая тема (3D-вид остаётся тёмным: его свечение аддитивное)',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)

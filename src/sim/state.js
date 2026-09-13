@@ -35,6 +35,7 @@ const defaultTelemetry = () => ({
   eirpLossDb: 0, arrayTempC: 22, pulsesSent: 0, echoes: 0, mainbeamJam: false,
   patternBwDeg: 4.2, patternSllDb: -13.3, patternPeakDb: 0, gratingLobe: false,
   rmSearchPct: 0, rmTrackPct: 0, rmConfirmPct: 0, rmTracks: 0, rmFrameS: 0, rmOverload: false,
+  blindSpeedMs: 19, vUnambMs: 9.5, pdTargetId: -1, pdTargetVr: 0, pdTargetFv: 0,
 });
 
 export class SimState {
@@ -60,6 +61,8 @@ export class SimState {
   trackRevisit = 1.0;         // s between TWS track updates demanded from the resource manager
   trackLoadCap = 0.7;         // fraction of pooled-beam time the manager may spend on track/confirm
   timelineVisible = true;     // dwell timeline strip in the viewport
+  mti = false;                // MTI clutter filter (single-delay canceller)
+  rdMapVisible = true;        // range–Doppler map overlay
   selectedPart = null;
   hoveredPart = null;
   hoveredQuadrant = null;

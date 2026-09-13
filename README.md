@@ -50,6 +50,17 @@ plot; the **SPACING** slider (0.5–1.0 λ) admits grating lobes, the **TAPER** 
 sidelobe level for beamwidth and gain. The readout shows the measured −3 dB beamwidth, peak
 sidelobe level and peak gain, and flags a grating lobe.
 
+## Pulse-Doppler
+
+Targets carry a radial velocity (T2's 56.9 m/s is deliberately 3× the 1200 Hz blind speed). The
+**range–Doppler map** under the aperture inset (`src/radar/doppler.js`, `src/ui/rdmap.js`) shows
+the current dwell: range up, folded velocity across (±PRF·λ/4), a ground-clutter ridge at zero
+Doppler when the beam points low, receiver noise, and a blip per target in the beam. **MTI** is a
+single-delay canceller that removes the ridge and notches every blind speed (PRF·λ/2); it also
+gates real detections and track updates, so a target at a blind speed is lost with MTI on and
+buried in clutter with it off. Raising the PRF widens the velocity window but folds range (Rᵤ
+shrinks). The **06 PULSE-DOPPLER** block has the map and MTI checkboxes and the ambiguity readouts.
+
 ## Resource manager
 
 The pooled search beam is time-shared by a **resource manager** (`src/radar/scan.js`): confirmation
@@ -109,6 +120,7 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/radar/pattern.js`, `src/radar/taper.js` | Live array-factor pattern (3-D lobes, az/el cuts, metrics) |
 | `src/ui/patternplot.js` | 2-D pattern-cut plot |
 | `src/ui/timeline.js` | Resource-manager dwell timeline strip |
+| `src/radar/doppler.js`, `src/ui/rdmap.js` | Doppler relations, MTI, clutter, range–Doppler map |
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
 | `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
 | `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |

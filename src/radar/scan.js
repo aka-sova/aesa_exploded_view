@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { COLORS } from '../sim/state.js';
+import { dopplerFactor } from './doppler.js';
 
 export const deg = Math.PI / 180;
 
@@ -294,7 +295,7 @@ export function createScheduler(elementsApi) {
         if (c > Math.cos(search.widthDeg * deg)) snr = 0;
       }
     }
-    return snr;
+    return snr * dopplerFactor(target, search.el, state);
   }
 
   function illuminate(target, snr, t) {
