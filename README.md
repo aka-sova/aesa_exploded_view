@@ -40,6 +40,17 @@ npm run build      # production bundle in dist/
 Visual exaggerations are stated in the HUD: beams drawn at 2× true width, 1 of ~100 pulses
 drawn, dwells ~10× slow.
 
+## Tutorial
+
+The **TUTORIAL** button in the top bar starts a 16-station guided tour. Each station configures
+the scene itself (camera, view mode, explode, scan pattern, subarray tasking, failure/jamming
+state), highlights the relevant control, and explains one idea — from what an AESA is, through
+phase steering, beamwidth and scan loss, pulses and echoes, the coverage dome and scan patterns,
+search-plus-track by subarray and by time-sharing, the signal path, graceful degradation, jamming
+and adaptive nulling, to duty cycle and heat. Navigate with Next / Back or ← →; Esc exits and
+restores the settings you had before. Texts live in `src/i18n.tutorial.js` (English and Russian);
+stations are defined in `src/ui/tutorial.js`.
+
 ## Languages
 
 The HUD is available in **English** and **Russian**; the EN / RU toggle sits in the top bar next
@@ -62,7 +73,8 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/radar/beams.js` | Beam frusta, pulse rings, echoes, jammer |
 | `src/radar/dome.js` | Coverage dome cells, pattern path, target markers |
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
-| `src/i18n.js` | English / Russian dictionaries, `t()`, language toggle |
+| `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
+| `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |
 
 `?dpr=1` in the URL forces a 1× pixel ratio for slower GPUs. `window.__lab` exposes the state
 and modules for debugging; `__lab.step(dt, n)` advances the simulation deterministically.

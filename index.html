@@ -13,6 +13,7 @@
       <div class="crumbs"><span data-i18n="top.crumbs1">ARRAY SYSTEMS</span> <span class="sep">/</span> <span data-i18n="top.crumbs2">VIRTUAL TEST CELL</span> <b>01</b></div>
       <div class="right">
         <span id="status-pill" class="pill grey">SYSTEM READY</span>
+        <button id="btn-tutorial" class="tut-btn" data-i18n="tut.button">TUTORIAL</button>
         <div id="lang-toggle" class="seg lang">
           <button class="seg-btn" data-lang="en" data-i18n="lang.en">EN</button>
           <button class="seg-btn" data-lang="ru" data-i18n="lang.ru">RU</button>
@@ -50,6 +51,13 @@
         <div class="hint" data-i18n="vp.hint">DRAG TO ORBIT · SCROLL TO ZOOM · CLICK TO INSPECT</div>
       </div>
       <div id="inset"><span class="micro" data-i18n="vp.inset">APERTURE · FROM FRONT</span></div>
+      <div id="tutorial" class="hidden">
+        <div class="tut-head"><span id="tut-step" class="micro accent"></span><button id="tut-close" class="tut-x" aria-label="Exit tutorial">×</button></div>
+        <h3 id="tut-title"></h3>
+        <div id="tut-body"></div>
+        <div id="tut-try" class="tut-try hidden"><span id="tut-try-label" class="micro accent"></span><span id="tut-try-text"></span></div>
+        <div class="tut-nav"><button id="tut-back" class="ghost"></button><div id="tut-dots"></div><button id="tut-next" class="primary"></button></div>
+      </div>
     </main>
 
     <aside id="right">

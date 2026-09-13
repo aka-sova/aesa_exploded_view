@@ -156,3 +156,26 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 /* ---- language toggle ---------------------------------------------------------------------- */
 .seg.lang { grid-template-columns: repeat(2, 1fr); }
 .seg.lang .seg-btn { padding: 4px 10px; }
+
+/* ---- tutorial ------------------------------------------------------------------------------- */
+.tut-btn { font: 600 10px var(--mono); letter-spacing: 0.12em; padding: 4px 10px; border-radius: 3px; color: var(--accent); border: 1px solid rgba(46, 230, 214, 0.5); }
+.tut-btn:hover, .tut-btn.active { background: rgba(46, 230, 214, 0.12); }
+#tutorial { top: 18px; left: 22px; width: 400px; max-width: calc(100% - 260px); max-height: calc(100% - 36px); pointer-events: auto; z-index: 3; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: rgba(7, 11, 16, 0.92); border: 1px solid rgba(46, 230, 214, 0.35); border-radius: 4px; backdrop-filter: blur(6px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); }
+#tutorial.hidden { display: none; }
+.tut-head { display: flex; justify-content: space-between; align-items: center; }
+.tut-x { border: 0; font-size: 18px; line-height: 1; color: var(--muted); padding: 0 4px; }
+.tut-x:hover { color: var(--text); }
+#tutorial h3 { margin: 0; font: 500 17px/1.25 var(--sans); letter-spacing: -0.01em; }
+#tut-body { font-size: 12px; line-height: 1.55; color: var(--muted); overflow: auto; min-height: 0; }
+#tut-body b { color: var(--text); font-weight: 600; }
+#tut-body i { color: var(--text); }
+.tut-try { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border-left: 2px solid var(--accent); background: rgba(46, 230, 214, 0.06); font-size: 11px; color: var(--text); }
+.tut-nav { display: flex; align-items: center; gap: 8px; }
+.tut-nav .ghost, .tut-nav .primary { flex: 0 0 auto; min-width: 84px; }
+#tut-dots { flex: 1; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+#tut-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line2); }
+#tut-dots i.done { background: rgba(46, 230, 214, 0.4); }
+#tut-dots i.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+#viewport.tutorial-active .vp-head, #viewport.tutorial-active #idle-chip { display: none; }
+.tut-highlight { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; animation: tutpulse 1.4s ease-in-out infinite; }
+@keyframes tutpulse { 50% { outline-color: rgba(46, 230, 214, 0.2); } }

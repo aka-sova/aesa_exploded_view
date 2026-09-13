@@ -1,5 +1,7 @@
 // Minimal i18n: string dictionaries per language, `t(key, vars)`, a language switch that
 // re-applies every `[data-i18n]` element and notifies subscribers (panel, labels, dome).
+import { tutorialEn, tutorialRu } from './i18n.tutorial.js';
+
 export const LANGS = ['en', 'ru'];
 const STORAGE_KEY = 'radar-lab-lang';
 
@@ -139,6 +141,8 @@ const ru = {
   'part.chassis.design': 'ФРЕЗЕРОВАННАЯ AL ПЛАТА · ЦАПФЫ', 'part.chassis.metric': 'МАССА',
 };
 
+Object.assign(en, tutorialEn);
+Object.assign(ru, tutorialRu);
 const DICT = { en, ru };
 const subscribers = new Set();
 let lang = detectLanguage();
