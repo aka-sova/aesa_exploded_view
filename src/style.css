@@ -246,5 +246,39 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 #manager-block { display: flex; flex-direction: column; gap: 7px; }
 #manager-block h6 { margin-bottom: 3px; }
 #rm-load, #rm-tracks { color: var(--text); }
-#timeline-wrap { right: 14px; bottom: 14px; width: 38%; min-width: 320px; max-width: 620px; padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 2px; }
+#br-stack { right: 14px; bottom: 14px; width: 38%; min-width: 320px; max-width: 620px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+#timeline-wrap { align-self: stretch; }
+#timeline-wrap { padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 2px; }
 #timeline-wrap canvas { display: block; }
+
+/* ---- range–Doppler map (top-right column, under the aperture inset) ---------------------- */
+#rdmap-wrap { right: 14px; top: 226px; width: 200px; padding: 5px 8px 4px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 3px; }
+#rdmap-wrap canvas { display: block; }
+#doppler-block { display: flex; flex-direction: column; gap: 7px; }
+#doppler-block h6 { margin-bottom: 3px; }
+#pd-ambig, #pd-target { color: var(--text); }
+
+/* readout lines whose text length varies keep a fixed two-line height so nothing around them jumps */
+#pd-ambig, #pd-target, #rm-load, #rm-tracks, #pat-readout, #rd-readout { min-height: 2.5em; font-variant-numeric: tabular-nums; }
+
+/* ---- track table ---------------------------------------------------------------------------- */
+#track-table { pointer-events: auto; width: fit-content; max-width: none; padding: 6px 8px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 4px; }
+.tt-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.tt-scroll { max-height: 6.4rem; overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
+.trk-table thead th { position: sticky; top: 0; background: rgba(5, 8, 12, 0.92); }
+.trk-table { border-collapse: collapse; font: 500 0.6923rem var(--mono); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.trk-table th, .trk-table td { padding: 2px 7px 2px 0; white-space: nowrap; text-align: left; }
+/* column widths are pinned from JS to the widest value each column can show (see panel.js) */
+.trk-table { table-layout: fixed; }
+.trk-table th { color: var(--dim); font-weight: 500; letter-spacing: 0.1em; }
+.trk-table td { color: var(--text); border-top: 1px solid var(--line); }
+.trk-table tr[data-id] { cursor: pointer; }
+.trk-table tr[data-id]:hover td { background: rgba(255, 255, 255, 0.05); }
+.trk-table tr.sel td { color: #ffffff; background: rgba(46, 230, 214, 0.12); }
+.trk-table td.src { color: var(--amber); }
+.trk-table td.q { letter-spacing: 0.15em; color: var(--accent); }
+.trk-table td.st { color: var(--dim); }
+.trk-table td.st.lost { color: var(--red); }
+.trk-table td.st.conf { color: #ffffff; }
+.trk-table td .true { color: var(--dim); }
+.dome-label.selected { color: #ffffff; }

@@ -16,13 +16,15 @@ import { createDome } from './radar/dome.js';
 import { createPatternView } from './radar/pattern.js';
 import { createPatternPlot } from './ui/patternplot.js';
 import { createTimeline } from './ui/timeline.js';
+import { createRdMap } from './ui/rdmap.js';
+import { computeRdMap, createRdSample, vUnamb, blindSpeed } from './radar/doppler.js';
 import { createTargets, updateTargets, markIlluminated } from './sim/targets.js';
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
 import { mountTutorial } from './ui/tutorial.js';
 import { mountFontSize } from './ui/fontsize.js';
 import { mountTheme, onThemeChange } from './ui/theme.js';
-import { tPart, onLangChange } from './i18n.js';
+import { t as tr, tPart, onLangChange } from './i18n.js';
 
 const PRESETS = {
   rear: { pos: [8.5, 6, -9], tgt: [0, 1.6, 2.5] },
@@ -138,13 +140,16 @@ renderer.domElement.addEventListener('pointerleave', () => { state.hoveredPart =
 
 function pick() {
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(assembly.pickables, false);
+  const marks = raycaster.intersectObject(dome.markers, false);
+  const targetId = marks.length && state.targets[marks[0].instanceId] ? state.targets[marks[0].instanceId].id : null;
+  const hits = targetId === null ? raycaster.intersectObjects(assembly.pickables, false) : [];
   const id = hits.length ? hits[0].object.userData.partId : null;
   state.hoveredPart = id;
-  renderer.domElement.style.cursor = id ? 'pointer' : '';
+  renderer.domElement.style.cursor = id || targetId !== null ? 'pointer' : '';
   if (clickPending) {
     clickPending = false;
-    if (id) state.selectedPart = state.selectedPart === id ? null : id;
+    if (targetId !== null) state.selectedTarget = state.selectedTarget === targetId ? null : targetId;
+    else if (id) state.selectedPart = state.selectedPart === id ? null : id;
   }
 }
 
@@ -188,6 +193,7 @@ const api = {
     beams.reset();
     dome.reset();
     pattern.reset();
+    rdSnapshots.clear();
     state.targets = createTargets();
     lastHops = -1;
   },
@@ -207,6 +213,9 @@ onThemeChange((th) => {
 const chart = createStripChart(document.getElementById('strip-chart'));
 const patternPlot = createPatternPlot(document.getElementById('pattern-plot'));
 const timeline = createTimeline(document.getElementById('timeline'));
+const rdMap = createRdMap(document.getElementById('rdmap'));
+const rdSample = createRdSample();
+const rdSnapshots = new Map();   // target id → latest dwell in which it was inside the beam
 let patternVersion = -1;
 
 // ---- resize ------------------------------------------------------------------------------------
@@ -310,6 +319,28 @@ function tick(dt) {
   }
   labelRenderer.render(scene, camera);
   if (state.timelineVisible) timeline.draw(scheduler.manager, state.time, state);
+  t.vUnambMs = vUnamb(state.prf);
+  t.blindSpeedMs = blindSpeed(state.prf);
+  if (state.rdMapVisible) {
+    const primary = state.beams.length ? state.beams[0] : null;
+    computeRdMap(state, primary, state.targets, rdSample);
+    for (const bl of rdSample.blips) {
+      if (bl.amp < 0.05) continue;
+      let snap = rdSnapshots.get(bl.id);
+      if (!snap) { snap = createRdSample(); snap.time = 0; rdSnapshots.set(bl.id, snap); }
+      snap.cells.set(rdSample.cells);
+      snap.blips.length = 0;
+      for (const b of rdSample.blips) snap.blips.push({ ...b });
+      snap.vUa = rdSample.vUa; snap.rU = rdSample.rU; snap.time = state.time;
+    }
+    const sel = state.selectedTarget;
+    if (sel === null) rdMap.draw(rdSample, state, null);
+    else if (rdSample.blips.some((b) => b.id === sel && b.amp >= 0.05)) rdMap.draw(rdSample, state, { stamp: tr('rd.live', { id: sel }), frozen: false, selectedId: sel });
+    else if (rdSnapshots.has(sel)) { const snap = rdSnapshots.get(sel); rdMap.draw(snap, state, { stamp: tr('rd.latest', { id: sel, s: (state.time - snap.time).toFixed(1) }), frozen: true, selectedId: sel }); }
+    else rdMap.draw(rdSample, state, { stamp: tr('rd.notSeen', { id: sel }), frozen: true, selectedId: sel });
+    const s = rdSample.strongest;
+    t.pdTargetId = s ? s.id : -1; t.pdTargetVr = s ? s.vr : 0; t.pdTargetFv = s ? s.fv : 0;
+  }
 
   stats.calls = renderer.info.render.calls;
   frames++; fpsClock += dt;

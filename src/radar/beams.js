@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { DOME_RADIUS, VIS_BEAM_SCALE, PULSE_SPEED, JAM_AZ, JAM_EL, deg, dirFromAzEl } from './scan.js';
 import { COLORS } from '../sim/state.js';
+import { dopplerFactor } from './doppler.js';
 
 const PULSE_MAX = 96;                 // ring instances shared by all beams and the jammer
 const PULSE_SLOTS = PULSE_MAX / 2;    // each pulse owns two instances: head + tail
@@ -338,6 +339,7 @@ export function createBeams(scene, elementsApi) {
     p.seq = ++seq;
     p.beam = beam;
     p.type = beam.dwellType || beam.type;
+    p.el = beam.el;
     p.dist = 0;
     p.prevDist = 0;
     p.travel = DOME_RADIUS;
@@ -458,7 +460,7 @@ export function createBeams(scene, elementsApi) {
       const dTheta = Math.acos(dot > 1 ? 1 : dot);
       const x = dTheta / p.sigma;
       const rr = (0.8 * DOME_RADIUS) / t.range;
-      const snr = p.gain * Math.exp(-x * x) * t.rcs * rr * rr * rr * rr;
+      const snr = p.gain * Math.exp(-x * x) * t.rcs * rr * rr * rr * rr * dopplerFactor(t, p.el || 0, state);
       if (snr <= (p.type === 'track' ? 0.15 : 0.3)) continue;
       if (isSuppressedByJamming(t, _v2, p, state)) continue;
       spawnEcho(p, t, snr, _v2);

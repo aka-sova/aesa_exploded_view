@@ -4,6 +4,7 @@
 import { SCAN_PATTERNS, VIEW_MODES, CAMERA_PRESETS, QUADRANT_MODES, COLORS } from '../sim/state.js';
 import { PARTS, PART_BY_ID } from '../data/parts.js';
 import { PATTERN_PERIOD } from '../radar/scan.js';
+import { foldVelocity, rangeKmOf } from '../radar/doppler.js';
 import { t, tPart, getLang, setLang, onLangChange, applyStatic, LANGS } from '../i18n.js';
 
 const $ = (id) => document.getElementById(id);
@@ -38,6 +39,7 @@ const TEL_FMT = {
   hops: (v) => String(v), dwellMs: (v) => v.toFixed(0) + ' ' + t('unit.ms'), pulsesPerDwell: (v) => String(v),
   eirpLossDb: (v) => '−' + v.toFixed(1) + ' ' + t('unit.db'), arrayTempC: (v) => v.toFixed(1) + ' °C',
   pulsesSent: (v) => String(v), echoes: (v) => String(v), detected: (v) => String(v),
+  vUnambMs: (v) => '±' + v.toFixed(1) + ' ' + t('unit.mps'), blindSpeedMs: (v) => v.toFixed(1) + ' ' + t('unit.mps'),
 };
 
 function setText(el, s) { if (el && el.__t !== s) { el.__t = s; el.textContent = s; } }
@@ -106,12 +108,15 @@ export function mountPanel(state, api) {
 
   // Everything built above that carries translated text is (re)labelled here.
   let shownPart = undefined;
+  const measureCanvas = document.createElement('canvas').getContext('2d');
   function relabel() {
     for (const m of VIEW_MODES) viewBtns[m].querySelector('.lbl').textContent = t(`view.${m}`);
     for (const c of CAMERA_PRESETS) camBtns[c].textContent = t(`cam.${c}`);
     for (const p of PARTS) partItems[p.id].querySelector('.name').textContent = tPart(p, 'name');
     for (const p of SCAN_PATTERNS) patBtns[p].querySelector('span').textContent = t(`pattern.${p}`);
     $('legend').innerHTML = LEGEND.map(([g, c, k]) => `<span class="chip"><i style="color:${hex(c)}">${g}</i>${t(k)}</span>`).join('');
+    $('track-table').title = t('trk.hint');
+    pinTrackColumns();
     shownPart = undefined;
   }
   relabel();
@@ -140,7 +145,7 @@ export function mountPanel(state, api) {
     el.onchange = () => { state[key] = el.checked; };
     return () => { if (el.checked !== state[key]) el.checked = state[key]; };
   };
-  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts'), chk('rm-timeline', 'timelineVisible')];
+  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts'), chk('rm-timeline', 'timelineVisible'), chk('rd-map', 'rdMapVisible'), chk('mti', 'mti')];
   syncSliders.push(
     bind('spacing', () => state.spacingLambda, (v) => { state.spacingLambda = v; }, (v) => v.toFixed(2) + ' λ'),
     bind('taper', () => Math.round(state.taper * 100), (v) => { state.taper = v / 100; }, (v) => v + ' %'),
@@ -157,10 +162,73 @@ export function mountPanel(state, api) {
     if (e.code === 'Space') { e.preventDefault(); toggleRun(); }
     else if (e.key >= '1' && e.key <= '4') api.setViewMode(VIEW_MODES[Number(e.key) - 1]);
     else if (e.code === 'KeyE') state.explodeTarget = state.explodeTarget > 0.5 ? 0 : 1;
+    else if (e.key === 'Escape') state.selectedTarget = null;
   });
 
   // ---- per-frame update -------------------------------------------------------------------
   const pill = $('status-pill');
+  const ttBody = $('tt-body');
+  ttBody.onclick = (e) => {
+    const row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    const id = Number(row.dataset.id);
+    state.selectedTarget = state.selectedTarget === id ? null : id;
+  };
+  const sgn = (v, d) => (v > 0 ? '+' : '') + v.toFixed(d);
+  // Pin every column to the widest string it can ever show (measured in the table's own font,
+  // so Cyrillic fallback glyphs are accounted for) — the card must never change size with values.
+  function pinTrackColumns() {
+    const ths = document.querySelectorAll('.trk-table thead th');
+    const font = getComputedStyle(ths[0]).font;
+    measureCanvas.font = font;
+    const widest = (strs) => Math.max(...strs.map((x) => measureCanvas.measureText(x).width));
+    const samples = [
+      ['T0', t('trk.id')], ['TWS', 'Q3', '—', t('trk.src')], ['000.0', t('trk.range')], ['−00.0 / +00.0', t('trk.azel')],
+      ['+00.0 (+000)', t('trk.v')], ['00.0', t('trk.upd')], ['●●●', t('trk.q')], [t('trk.confirming'), t('trk.lost'), t('trk.detected')],
+    ];
+    let total = 0;
+    ths.forEach((th, i) => { const w = Math.ceil(widest(samples[i]) + 8); th.style.width = w + 'px'; total += w; });
+    document.querySelector('.trk-table').style.width = total + 'px';
+  }
+  // Rows are created once per target and updated in place: rebuilding the tbody every frame
+  // would replace the element between a real mouse-down and mouse-up and swallow the click.
+  const rowEls = new Map();
+  function rowFor(id) {
+    let tr = rowEls.get(id);
+    if (tr) return tr;
+    tr = document.createElement('tr');
+    tr.dataset.id = String(id);
+    tr.innerHTML = `<td>T${id}</td><td class="src"></td><td></td><td></td><td><span class="seen"></span> <span class="true"></span></td><td></td><td class="q"></td><td class="st"></td>`;
+    rowEls.set(id, tr);
+    return tr;
+  }
+  function updateTrackTable() {
+    let k = 0;
+    for (const tg of state.targets) {
+      const lost = state.time - tg.lostAt < 3;
+      const listed = tg.tracked || tg.tws || tg.confirmPending || lost || state.selectedTarget === tg.id;
+      if (!listed) continue;
+      const tr = rowFor(tg.id);
+      const c = tr.children;
+      const sel = state.selectedTarget === tg.id;
+      setClass(tr, 'sel', sel);
+      setText(c[1], tg.tracked ? 'Q' + tg.trackedBy : tg.tws ? 'TWS' : '—');
+      setText(c[2], rangeKmOf(tg).toFixed(1));
+      setText(c[3], `${sgn(tg.az * 57.2958, 1)} / ${sgn(tg.el * 57.2958, 1)}`);
+      setText(c[4].children[0], sgn(foldVelocity(tg.vr, state.prf), 1));
+      setText(c[4].children[1], sel ? `(${sgn(tg.vr, 0)})` : '');
+      setText(c[5], tg.lastSeen > -Infinity ? Math.max(0, state.time - tg.lastSeen).toFixed(1) : '—');
+      setText(c[6], (tg.tws || tg.tracked) ? '●'.repeat(Math.max(0, 3 - tg.misses)) + '○'.repeat(Math.min(3, tg.misses)) : '');
+      const st = lost && !tg.tws && !tg.tracked ? ['lost', t('trk.lost')] : tg.confirmPending ? ['conf', t('trk.confirming')] : !tg.tws && !tg.tracked ? ['', t('trk.detected')] : ['', ''];
+      setText(c[7], st[1]);
+      setClass(c[7], 'lost', st[0] === 'lost');
+      setClass(c[7], 'conf', st[0] === 'conf');
+      if (ttBody.children[k] !== tr) ttBody.insertBefore(tr, ttBody.children[k] || null);
+      k++;
+    }
+    while (ttBody.children.length > k) ttBody.lastElementChild.remove();
+    return k;
+  }
   const tel = document.querySelectorAll('[data-tel]');
   const insp = { code: $('insp-code'), name: $('insp-name'), desc: $('insp-desc'), design: $('insp-design'), mlabel: $('insp-metric-label'), mval: $('insp-metric-value'), munit: $('insp-metric-unit') };
 
@@ -210,6 +278,16 @@ export function mountPanel(state, api) {
     for (const c of syncChecks) c();
     setClass($('pat-plot-wrap'), 'hidden', !state.patternCuts);
     setClass($('timeline-wrap'), 'hidden', !state.timelineVisible);
+    setClass($('rdmap-wrap'), 'hidden', !state.rdMapVisible);
+    {
+      const tm = state.telemetry;
+      setText($('pd-ambig'), t('pd.ambig', { v: tm.vUnambMs.toFixed(1), vb: tm.blindSpeedMs.toFixed(1), r: tm.unambRangeKm.toFixed(0) }));
+      setClass($('tt-empty'), 'hidden', updateTrackTable() > 0);
+      const selT = state.selectedTarget !== null ? state.targets.find((x) => x.id === state.selectedTarget) : null;
+      if (selT) setText($('pd-target'), t('pd.target', { id: selT.id, vr: (selT.vr > 0 ? '+' : '') + selT.vr.toFixed(0), fv: (foldVelocity(selT.vr, state.prf) > 0 ? '+' : '') + foldVelocity(selT.vr, state.prf).toFixed(1) }));
+      else setText($('pd-target'), tm.pdTargetId >= 0 ? t('pd.target', { id: tm.pdTargetId, vr: (tm.pdTargetVr > 0 ? '+' : '') + tm.pdTargetVr.toFixed(0), fv: (tm.pdTargetFv > 0 ? '+' : '') + tm.pdTargetFv.toFixed(1) }) : t('pd.none'));
+      setText($('rd-readout'), t('rd.readout', { prf: state.prf, v: tm.vUnambMs.toFixed(1), r: tm.unambRangeKm.toFixed(0), mti: t(state.mti ? 'rd.on' : 'rd.off') }));
+    }
     {
       const tm = state.telemetry;
       setText($('rm-load'), t('rm.load', { s: tm.rmSearchPct.toFixed(0), t: tm.rmTrackPct.toFixed(0), c: tm.rmConfirmPct.toFixed(0) }));

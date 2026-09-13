@@ -170,6 +170,7 @@ export function createDome(scene) {
   const brackets = [], labels = [];
   const bracketGeo = bracketGeometry();
   const bracketMat = new THREE.LineBasicMaterial({ color: COLORS.track, transparent: true, opacity: 0.9, depthWrite: false, fog: false });
+  const bracketSelMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, depthWrite: false, fog: false });
   for (let i = 0; i < MAX_TARGETS; i++) {
     const b = new THREE.LineSegments(bracketGeo, bracketMat);
     b.renderOrder = 5;
@@ -258,7 +259,8 @@ export function createDome(scene) {
     for (let i = 0; i < MAX_TARGETS; i++) {
       const tg = state.targets[i];
       const label = labels[i];
-      if (!tg || (!tg.detected && !tg.tracked && !tg.tws)) {
+      const selected = tg && state.selectedTarget === tg.id;
+      if (!tg || (!tg.detected && !tg.tracked && !tg.tws && !selected)) {
         _m.makeScale(0, 0, 0);
         markers.setMatrixAt(i, _m);
         brackets[i].visible = false;
@@ -270,14 +272,16 @@ export function createDome(scene) {
       _s.setScalar(sc);
       _q.identity();
       markers.setMatrixAt(i, _m.compose(_dir, _q, _s));
-      if (tg.tracked || tg.tws) {
-        markers.setColorAt(i, AMBER);
+      if (tg.tracked || tg.tws || selected) {
+        markers.setColorAt(i, selected ? WHITE : AMBER);
+        brackets[i].material = selected ? bracketSelMat : bracketMat;
+        label.el.classList.toggle('selected', selected);
         brackets[i].visible = true;
         brackets[i].position.copy(_dir);
         brackets[i].lookAt(0, 0, 0);
         label.obj.visible = true;
         label.obj.position.copy(_dir).y += 0.4;
-        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs }) + (tg.tws && !tg.tracked ? ' · ' + t('dome.tws') : '');
+        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs, vr: (tg.vr > 0 ? '+' : '') + tg.vr.toFixed(0) }) + (tg.tws && !tg.tracked ? ' · ' + t('dome.tws') : '');
         if (text !== label.text) { label.text = text; label.el.textContent = text; }
       } else {
         const age = Math.max(0, state.time - tg.lastSeen);
@@ -341,5 +345,5 @@ export function createDome(scene) {
   }
 
   writeColors(0, false, false);
-  return { group, update, splash, flashDetection, setPatternPath, reset };
+  return { group, markers, update, splash, flashDetection, setPatternPath, reset };
 }
