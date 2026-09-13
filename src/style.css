@@ -115,7 +115,7 @@ h6 { font: 500 0.7692rem var(--mono); letter-spacing: 0.12em; color: var(--muted
 #viewport { grid-area: vp; position: relative; overflow: hidden; background: var(--bg);
   --bg: #05080c; --text: #e6edf3; --muted: #7d8996; --dim: #55606c; --line: rgba(255, 255, 255, 0.08); --line2: rgba(255, 255, 255, 0.14);
   --accent: #2ee6d6; --accent-rgb: 46, 230, 214; --amber: #f5a623; --amber-rgb: 245, 166, 35; --red: #e24b4a; --red-rgb: 226, 75, 74; --standby: #3a4a5a; --standby-rgb: 58, 74, 90; --hover: rgba(255, 255, 255, 0.03); --glow: 1; }
-#viewport canvas { position: absolute; inset: 0; display: block; }
+#viewport > canvas { position: absolute; inset: 0; display: block; }
 #viewport > div { position: absolute; pointer-events: none; z-index: 2; }
 .vp-head { top: 18px; left: 22px; }
 .eyebrow { font: 500 0.6923rem var(--mono); letter-spacing: 0.16em; color: var(--dim); margin-bottom: 8px; }
@@ -128,7 +128,7 @@ h6 { font: 500 0.7692rem var(--mono); letter-spacing: 0.12em; color: var(--muted
 #beam-roster { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; align-items: flex-start; }
 #beam-roster .row { display: flex; align-items: center; gap: 8px; font: 500 0.7692rem var(--mono); letter-spacing: 0.08em; color: var(--text); background: rgba(5, 8, 12, 0.5); padding: 3px 8px 3px 4px; border-radius: 2px; }
 #beam-roster .row i { width: 3px; height: 12px; border-radius: 1px; }
-.vp-foot { left: 22px; bottom: 14px; max-width: 62%; display: flex; flex-direction: column; gap: 6px; }
+.vp-foot { left: 22px; bottom: 14px; max-width: 56%; display: flex; flex-direction: column; gap: 6px; }
 #legend { display: flex; flex-wrap: wrap; gap: 4px; }
 .hint { font: 500 0.6923rem var(--mono); letter-spacing: 0.14em; color: var(--dim); }
 #inset { right: 14px; top: 18px; width: 200px; height: 200px; border: 1px solid var(--line2); border-radius: 3px; display: flex; align-items: flex-start; padding: 6px 8px; background: transparent; }
@@ -246,5 +246,5 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 #manager-block { display: flex; flex-direction: column; gap: 7px; }
 #manager-block h6 { margin-bottom: 3px; }
 #rm-load, #rm-tracks { color: var(--text); }
-#timeline-wrap { width: 100%; padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); }
+#timeline-wrap { right: 14px; bottom: 14px; width: 38%; min-width: 320px; max-width: 620px; padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 2px; }
 #timeline-wrap canvas { display: block; }
