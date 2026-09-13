@@ -51,6 +51,13 @@ and adaptive nulling, to duty cycle and heat. Navigate with Next / Back or ← �
 restores the settings you had before. Texts live in `src/i18n.tutorial.js` (English and Russian);
 stations are defined in `src/ui/tutorial.js`.
 
+## Themes
+
+The **DARK / LIGHT** toggle in the top bar switches the HUD chrome; the choice is remembered per
+browser and defaults to the OS preference. The 3-D viewport keeps its dark canvas in both themes
+because the beam, pulse and dome glow are additive-blended and would clip to white on a light
+background; overlays that float over the canvas keep their dark styling for the same reason.
+
 ## Text size
 
 The **A− / 100% / A+** control in the top bar scales the whole HUD between 80 % and 140 % (the 3-D
@@ -82,6 +89,7 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
 | `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |
 | `src/ui/fontsize.js` | HUD text-size control (root font-size, rem-based layout) |
+| `src/ui/theme.js` | Dark / light theme toggle (`data-theme` on `<html>`, CSS tokens) |
 
 `?dpr=1` in the URL forces a 1× pixel ratio for slower GPUs. `window.__lab` exposes the state
 and modules for debugging; `__lab.step(dt, n)` advances the simulation deterministically.
