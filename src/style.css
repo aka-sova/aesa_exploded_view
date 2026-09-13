@@ -255,3 +255,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 #doppler-block { display: flex; flex-direction: column; gap: 7px; }
 #doppler-block h6 { margin-bottom: 3px; }
 #pd-ambig, #pd-target { color: var(--text); }
+
+/* readout lines whose text length varies keep a fixed two-line height so nothing around them jumps */
+#pd-ambig, #pd-target, #rm-load, #rm-tracks, #pat-readout, #rd-readout { min-height: 2.5em; font-variant-numeric: tabular-nums; }
