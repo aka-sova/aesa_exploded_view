@@ -241,3 +241,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 #pat-plot-wrap canvas { display: block; }
 #pat-readout { color: var(--text); }
 #pat-readout.amber { color: var(--amber); }
+
+/* ---- resource manager ---------------------------------------------------------------------- */
+#manager-block { display: flex; flex-direction: column; gap: 7px; }
+#manager-block h6 { margin-bottom: 3px; }
+#rm-load, #rm-tracks { color: var(--text); }
+#timeline-wrap { width: 100%; padding: 4px 6px 2px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); }
+#timeline-wrap canvas { display: block; }

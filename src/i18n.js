@@ -43,7 +43,7 @@ const en = {
   'scan.title': 'SCAN PATTERN', 'scan.rate': 'SCAN RATE',
   'scan.hint': 'BEAM HOPS IN µs — NO INERTIA · A REAL AESA TIME-SHARES THE FULL APERTURE BETWEEN SEARCH AND TRACK DWELLS',
   'pattern.sector': 'SECTOR', 'pattern.raster': 'RASTER (8-BAR)', 'pattern.circular': 'CIRCULAR (CUED ACQ.)',
-  'pattern.spiral': 'SPIRAL (ACQUISITION)', 'pattern.agile': 'AGILE (SEARCH + TRACK)',
+  'pattern.spiral': 'SPIRAL (ACQUISITION)', 'pattern.agile': 'AGILE (RANDOM HOPS)',
   'patternShort.sector': 'SECTOR', 'patternShort.raster': 'RASTER', 'patternShort.circular': 'CIRCULAR', 'patternShort.spiral': 'SPIRAL', 'patternShort.agile': 'AGILE',
   'emit.title': 'EMISSION', 'emit.prf': 'PRF', 'emit.power': 'POWER', 'emit.explode': 'EXPLODE', 'emit.hint': 'Rᵤ = c / 2·PRF · 12 W GaN MODULES',
   'sub.title': 'SUBARRAY TASKING', 'sub.front': 'FRONT VIEW (+Z)', 'sub.rear': 'REAR VIEW (−Z) · MIRRORED',
@@ -59,6 +59,10 @@ const en = {
   'pat.title': '04 ANTENNA PATTERN', 'pat.search': 'SEARCH BEAM LOBE (3-D)', 'pat.track': 'TRACK BEAM LOBES (3-D)', 'pat.cuts': 'AZ / EL CUTS',
   'pat.spacing': 'SPACING', 'pat.taper': 'TAPER', 'pat.readout': 'BW {bw}° · SLL {sll} dB · PEAK {peak} dB', 'pat.grating': 'GRATING LOBE',
   'pat.hint': 'PATTERN FROM ALL 576 ELEMENT STATES · 0 dB = FULL UNIFORM ARRAY · FLOOR −40 dB', 'legend.pattern': 'PATTERN LOBE (dB SURFACE)',
+  'rm.title': '05 RESOURCE MANAGER', 'rm.timeline': 'DWELL TIMELINE', 'rm.revisit': 'REVISIT', 'rm.cap': 'TRACK CAP',
+  'rm.load': 'SEARCH {s} % · TRACK {t} % · CONFIRM {c} %', 'rm.tracks': 'TWS TRACKS {n} · SEARCH FRAME {f}',
+  'rm.overload': 'OVERLOAD — LOWEST-PRIORITY TRACK DROPPED', 'rm.hint': 'PRIORITY: CONFIRM > TRACK UPDATE > SEARCH · SEARCH ONLY ADVANCES IN ITS OWN DWELLS',
+  'tl.pooled': 'B0 POOLED', 'tl.search': 'SEARCH', 'tl.track': 'TRACK', 'tl.confirm': 'CONFIRM', 'dome.tws': 'TWS',
   'theme.dark': 'DARK', 'theme.light': 'LIGHT', 'theme.title': 'Colour theme (the 3-D view stays dark: its glow is additive)',
 };
 
@@ -100,7 +104,7 @@ const ru = {
   'scan.title': 'РЕЖИМ ОБЗОРА', 'scan.rate': 'СКОРОСТЬ',
   'scan.hint': 'ЛУЧ ПЕРЕКЛЮЧАЕТСЯ ЗА мкс — БЕЗ ИНЕРЦИИ · РЕАЛЬНАЯ АФАР ДЕЛИТ ВРЕМЯ ВСЕЙ АПЕРТУРЫ МЕЖДУ ОБЗОРОМ И СОПРОВОЖДЕНИЕМ',
   'pattern.sector': 'СЕКТОР', 'pattern.raster': 'РАСТР (8 СТРОК)', 'pattern.circular': 'КРУГОВОЙ (ЗАХВАТ ПО ЦУ)',
-  'pattern.spiral': 'СПИРАЛЬ (ЗАХВАТ)', 'pattern.agile': 'ГИБКИЙ (ОБЗОР + СОПР.)',
+  'pattern.spiral': 'СПИРАЛЬ (ЗАХВАТ)', 'pattern.agile': 'ГИБКИЙ (СЛУЧАЙНЫЕ СКАЧКИ)',
   'patternShort.sector': 'СЕКТОР', 'patternShort.raster': 'РАСТР', 'patternShort.circular': 'КРУГОВОЙ', 'patternShort.spiral': 'СПИРАЛЬ', 'patternShort.agile': 'ГИБКИЙ',
   'emit.title': 'ИЗЛУЧЕНИЕ', 'emit.prf': 'ЧПИ', 'emit.power': 'МОЩНОСТЬ', 'emit.explode': 'РАЗНЕСЕНИЕ', 'emit.hint': 'Rодн = c / 2·ЧПИ · МОДУЛИ GaN 12 Вт',
   'sub.title': 'ЗАДАЧИ ПОДРЕШЁТОК', 'sub.front': 'ВИД СПЕРЕДИ (+Z)', 'sub.rear': 'ВИД СЗАДИ (−Z) · ЗЕРКАЛЬНО',
@@ -116,6 +120,10 @@ const ru = {
   'pat.title': '04 ДИАГРАММА НАПРАВЛЕННОСТИ', 'pat.search': 'ЛЕПЕСТОК ОБЗОРНОГО ЛУЧА (3D)', 'pat.track': 'ЛЕПЕСТКИ ЛУЧЕЙ СОПР. (3D)', 'pat.cuts': 'СЕЧЕНИЯ ПО АЗ / УМ',
   'pat.spacing': 'ШАГ', 'pat.taper': 'ВЗВЕШ.', 'pat.readout': 'ШЛ {bw}° · УБЛ {sll} дБ · МАКС {peak} дБ', 'pat.grating': 'ДИФР. ЛЕПЕСТОК',
   'pat.hint': 'ДИАГРАММА ПО СОСТОЯНИЮ ВСЕХ 576 ЭЛЕМЕНТОВ · 0 дБ = ПОЛНАЯ РАВНОМЕРНАЯ РЕШЁТКА · НИЗ −40 дБ', 'legend.pattern': 'ЛЕПЕСТОК ДН (ПОВЕРХНОСТЬ дБ)',
+  'rm.title': '05 ДИСПЕТЧЕР РЕСУРСА', 'rm.timeline': 'ЛЕНТА ДИСКРЕТОВ', 'rm.revisit': 'ОБНОВЛ.', 'rm.cap': 'ЛИМИТ СОПР.',
+  'rm.load': 'ОБЗОР {s} % · СОПР. {t} % · ПОДТВ. {c} %', 'rm.tracks': 'ТРАСС СНП {n} · ЦИКЛ ОБЗОРА {f}',
+  'rm.overload': 'ПЕРЕГРУЗКА — СБРОШЕНА ТРАССА С НИЗШИМ ПРИОРИТЕТОМ', 'rm.hint': 'ПРИОРИТЕТ: ПОДТВЕРЖДЕНИЕ > ОБНОВЛЕНИЕ ТРАССЫ > ОБЗОР · ОБЗОР ИДЁТ ТОЛЬКО В СВОИХ ДИСКРЕТАХ',
+  'tl.pooled': 'B0 ОБЩИЙ', 'tl.search': 'ОБЗОР', 'tl.track': 'СОПР.', 'tl.confirm': 'ПОДТВ.', 'dome.tws': 'СНП',
   'theme.dark': 'ТЁМНАЯ', 'theme.light': 'СВЕТЛАЯ', 'theme.title': 'Цветовая тема (3D-вид остаётся тёмным: его свечение аддитивное)',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)

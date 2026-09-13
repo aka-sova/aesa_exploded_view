@@ -15,6 +15,14 @@ export class Target {
     this.lastSeen = -Infinity;
     this.strength = 0;
     this.ping = 0;
+    // resource-manager (track-while-scan) bookkeeping
+    this.tws = false;
+    this.confirmPending = false;
+    this.confirmRequested = -Infinity;
+    this.lastConfirmTry = -Infinity;
+    this.nextUpdate = 0;
+    this.misses = 0;
+    this.cooldownUntil = -Infinity;
   }
 }
 
@@ -47,7 +55,7 @@ export function updateTargets(dt, state) {
       if (t.el > EL_HI) { t.el = EL_HI; t.vel = -Math.abs(t.vel); }
       else if (t.el < EL_LO) { t.el = EL_LO; t.vel = Math.abs(t.vel); }
     }
-    if (t.detected && !t.tracked && state.time - t.lastSeen > DETECT_MEMORY_S) t.detected = false;
+    if (t.detected && !t.tracked && !t.tws && state.time - t.lastSeen > DETECT_MEMORY_S) t.detected = false;
     t.strength *= Math.exp(-0.3 * dt);
     t.ping = Math.max(0, t.ping - dt / 0.3);
   }

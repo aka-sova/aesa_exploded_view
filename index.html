@@ -55,6 +55,16 @@
         <div id="pat-readout" class="micro"></div>
         <div class="micro dim" data-i18n="pat.hint">PATTERN FROM ALL 576 ELEMENT STATES · 0 dB = FULL UNIFORM ARRAY · FLOOR −40 dB</div>
       </section>
+      <section id="manager-block">
+        <h6 data-i18n="rm.title">05 RESOURCE MANAGER</h6>
+        <label class="chk"><input type="checkbox" id="rm-timeline" /><span class="box"></span><span data-i18n="rm.timeline">DWELL TIMELINE</span></label>
+        <div class="slider-row"><span class="k" data-i18n="rm.revisit">REVISIT</span><input id="revisit" type="range" min="0.3" max="2" step="0.1" /><span id="revisit-val" class="v"></span></div>
+        <div class="slider-row"><span class="k" data-i18n="rm.cap">TRACK CAP</span><input id="loadcap" type="range" min="30" max="90" step="5" /><span id="loadcap-val" class="v"></span></div>
+        <div id="rm-load" class="micro"></div>
+        <div id="rm-tracks" class="micro"></div>
+        <div id="rm-overload" class="warn hidden" data-i18n="rm.overload">OVERLOAD — LOWEST-PRIORITY TRACK DROPPED</div>
+        <div class="micro dim" data-i18n="rm.hint">PRIORITY: CONFIRM > TRACK UPDATE > SEARCH · SEARCH ONLY ADVANCES IN ITS OWN DWELLS</div>
+      </section>
     </aside>
 
     <main id="viewport">
@@ -65,6 +75,7 @@
       </div>
       <div id="idle-chip" class="chip" data-i18n="vp.idle">PRESS SPACE OR START TO RADIATE</div>
       <div class="vp-foot">
+        <div id="timeline-wrap"><canvas id="timeline"></canvas></div>
         <div id="beam-roster"></div>
         <div id="legend"></div>
         <div class="micro dim" data-i18n="vp.exag">BEAM DRAWN 2× TRUE WIDTH · 1 OF 100 PULSES DRAWN · DWELLS ~10× SLOW · COVERAGE AZ ±70° EL −10…50° · 5° CELLS</div>

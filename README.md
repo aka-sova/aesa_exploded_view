@@ -50,6 +50,17 @@ plot; the **SPACING** slider (0.5–1.0 λ) admits grating lobes, the **TAPER** 
 sidelobe level for beamwidth and gain. The readout shows the measured −3 dB beamwidth, peak
 sidelobe level and peak gain, and flags a grating lobe.
 
+## Resource manager
+
+The pooled search beam is time-shared by a **resource manager** (`src/radar/scan.js`): confirmation
+dwells on fresh detections take priority over track updates, which take priority over search, and
+the search pattern only advances during search dwells — so carried tracks visibly stretch the
+search frame. Confirmed targets become track-while-scan (TWS) tracks updated every **REVISIT**
+seconds; three missed updates drop a track, and when track load exceeds **TRACK CAP** the farthest
+track is shed. The **05 RESOURCE MANAGER** block shows occupancy, TWS track count and frame time;
+the **DWELL TIMELINE** strip in the viewport (`src/ui/timeline.js`) draws the last six seconds of
+dwells per lane with detection / confirmation / drop markers.
+
 ## Tutorial
 
 The **TUTORIAL** button in the top bar starts a 16-station guided tour. Each station configures
@@ -97,6 +108,7 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/radar/dome.js` | Coverage dome cells, pattern path, target markers |
 | `src/radar/pattern.js`, `src/radar/taper.js` | Live array-factor pattern (3-D lobes, az/el cuts, metrics) |
 | `src/ui/patternplot.js` | 2-D pattern-cut plot |
+| `src/ui/timeline.js` | Resource-manager dwell timeline strip |
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
 | `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
 | `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |

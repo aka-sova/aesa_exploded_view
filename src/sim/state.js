@@ -34,6 +34,7 @@ const defaultTelemetry = () => ({
   dutyCycle: 0.012, pulseWidthUs: 10, peakPowerKw: 0, avgPowerKw: 0, unambRangeKm: 125,
   eirpLossDb: 0, arrayTempC: 22, pulsesSent: 0, echoes: 0, mainbeamJam: false,
   patternBwDeg: 4.2, patternSllDb: -13.3, patternPeakDb: 0, gratingLobe: false,
+  rmSearchPct: 0, rmTrackPct: 0, rmConfirmPct: 0, rmTracks: 0, rmFrameS: 0, rmOverload: false,
 });
 
 export class SimState {
@@ -56,6 +57,9 @@ export class SimState {
   patternSearch = true;       // draw the search beam's pattern lobe
   patternTrack = true;        // draw track beams' pattern lobes
   patternCuts = true;         // show the az/el cut plot
+  trackRevisit = 1.0;         // s between TWS track updates demanded from the resource manager
+  trackLoadCap = 0.7;         // fraction of pooled-beam time the manager may spend on track/confirm
+  timelineVisible = true;     // dwell timeline strip in the viewport
   selectedPart = null;
   hoveredPart = null;
   hoveredQuadrant = null;
