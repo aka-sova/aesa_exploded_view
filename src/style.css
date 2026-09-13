@@ -265,7 +265,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 .tt-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
 .tt-scroll { max-height: 6.4rem; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
 .trk-table thead th { position: sticky; top: 0; background: rgba(5, 8, 12, 0.92); }
-.trk-table { border-collapse: collapse; font: 500 0.6923rem var(--mono); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.trk-table { width: 100%; border-collapse: collapse; font: 500 0.6923rem var(--mono); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.trk-table th:last-child, .trk-table td:last-child { width: 100%; }
 .trk-table th, .trk-table td { padding: 2px 7px 2px 0; white-space: nowrap; text-align: left; }
 .trk-table th { color: var(--dim); font-weight: 500; letter-spacing: 0.1em; }
 .trk-table td { color: var(--text); border-top: 1px solid var(--line); }
