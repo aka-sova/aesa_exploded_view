@@ -114,6 +114,7 @@ export function mountPanel(state, api) {
     for (const p of PARTS) partItems[p.id].querySelector('.name').textContent = tPart(p, 'name');
     for (const p of SCAN_PATTERNS) patBtns[p].querySelector('span').textContent = t(`pattern.${p}`);
     $('legend').innerHTML = LEGEND.map(([g, c, k]) => `<span class="chip"><i style="color:${hex(c)}">${g}</i>${t(k)}</span>`).join('');
+    $('track-table').title = t('trk.hint');
     shownPart = undefined;
   }
   relabel();
