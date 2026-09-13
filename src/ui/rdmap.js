@@ -25,7 +25,7 @@ export function createRdMap(canvas) {
     px[o] = r; px[o + 1] = g; px[o + 2] = b; px[o + 3] = 255;
   }
 
-  function draw(sample, state) {
+  function draw(sample, state, view = null) {
     const cells = sample.cells;
     for (let rb = 0; rb < RD_NR; rb++) {
       const row = RD_NR - 1 - rb;            // range increases upward
@@ -77,10 +77,20 @@ export function createRdMap(canvas) {
     for (const bl of sample.blips) {
       if (bl.amp < 0.05) continue;
       const x = L + ((bl.vBin + 0.5) / RD_NV) * pw, y = T + ph - ((bl.rBin + 0.5) / RD_NR) * ph;
-      ctx.strokeStyle = '#f5a623';
+      const sel = view && view.selectedId === bl.id;
+      ctx.strokeStyle = sel ? '#ffffff' : '#f5a623';
+      ctx.lineWidth = sel ? 1.5 : 1;
       ctx.strokeRect(x - 4.5, y - 4.5, 9, 9);
-      ctx.fillStyle = '#f5a623';
+      ctx.fillStyle = sel ? '#ffffff' : '#f5a623';
       ctx.fillText(`T${bl.id}`, x + 7, y);
+    }
+    ctx.lineWidth = 1;
+    if (view) {
+      if (view.frozen) { ctx.fillStyle = 'rgba(5, 8, 12, 0.35)'; ctx.fillRect(L, T, pw, ph); }
+      ctx.fillStyle = view.frozen ? '#e6edf3' : '#2ee6d6';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      ctx.fillText(view.stamp, L + pw - 3, T + 3);
     }
   }
 

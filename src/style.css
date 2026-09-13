@@ -258,3 +258,23 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px;
 
 /* readout lines whose text length varies keep a fixed two-line height so nothing around them jumps */
 #pd-ambig, #pd-target, #rm-load, #rm-tracks, #pat-readout, #rd-readout { min-height: 2.5em; font-variant-numeric: tabular-nums; }
+
+/* ---- track table ---------------------------------------------------------------------------- */
+#viewport > #track-table { pointer-events: auto; }
+#track-table { top: 100px; left: 22px; max-width: 56%; padding: 6px 8px; border: 1px solid var(--line2); border-radius: 3px; background: rgba(5, 8, 12, 0.6); backdrop-filter: blur(4px); display: flex; flex-direction: column; gap: 4px; }
+#viewport.tutorial-active #track-table { display: none; }
+.tt-head { display: flex; gap: 12px; align-items: baseline; }
+.trk-table { border-collapse: collapse; font: 500 0.6923rem var(--mono); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.trk-table th, .trk-table td { padding: 2px 7px 2px 0; white-space: nowrap; text-align: left; }
+.trk-table th { color: var(--dim); font-weight: 500; letter-spacing: 0.1em; }
+.trk-table td { color: var(--text); border-top: 1px solid var(--line); }
+.trk-table tr[data-id] { cursor: pointer; }
+.trk-table tr[data-id]:hover td { background: rgba(255, 255, 255, 0.05); }
+.trk-table tr.sel td { color: #ffffff; background: rgba(46, 230, 214, 0.12); }
+.trk-table td.src { color: var(--amber); }
+.trk-table td.q { letter-spacing: 0.15em; color: var(--accent); }
+.trk-table td.st { color: var(--dim); }
+.trk-table td.st.lost { color: var(--red); }
+.trk-table td.st.conf { color: #ffffff; }
+.trk-table td .true { color: var(--dim); }
+.dome-label.selected { color: #ffffff; }

@@ -19,6 +19,7 @@ function baseline(s, api) {
   s.power = 60;
   s.scanRate = 1;
   s.selectedPart = null;
+  s.selectedTarget = null;
   s.spacingLambda = 0.5;
   s.taper = 0;
   s.patternSearch = true;
@@ -52,7 +53,7 @@ const STEPS = [
   { id: 'thermal', highlight: ['[data-tel="arrayTempC"]', '#prf', '#power'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.prf = 4000; s.power = 100; s.selectedPart = 'coldplate'; s.running = true; } },
   { id: 'end', highlight: [], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.running = true; } },
 ];
-const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart', 'spacingLambda', 'taper', 'patternSearch', 'patternTrack', 'patternCuts', 'trackRevisit', 'trackLoadCap', 'timelineVisible', 'mti', 'rdMapVisible'];
+const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart', 'spacingLambda', 'taper', 'patternSearch', 'patternTrack', 'patternCuts', 'trackRevisit', 'trackLoadCap', 'timelineVisible', 'mti', 'rdMapVisible', 'selectedTarget'];
 
 export function mountTutorial(state, api) {
   const card = $('tutorial'), viewport = $('viewport');

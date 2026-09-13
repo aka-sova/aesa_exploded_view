@@ -82,6 +82,14 @@
         <div id="vp-subtitle" class="micro"></div>
       </div>
       <div id="idle-chip" class="chip" data-i18n="vp.idle">PRESS SPACE OR START TO RADIATE</div>
+      <div id="track-table">
+        <div class="tt-head"><span class="micro" data-i18n="trk.title">TRACKS</span><span class="micro dim" data-i18n="trk.hint">CLICK A ROW OR A TARGET TO PIN THE RANGE–DOPPLER MAP · ESC TO UNPIN</span></div>
+        <table class="trk-table">
+          <thead><tr><th data-i18n="trk.id">ID</th><th data-i18n="trk.src">SRC</th><th data-i18n="trk.range">RANGE km</th><th data-i18n="trk.azel">AZ / EL °</th><th data-i18n="trk.v">V SEEN m/s</th><th data-i18n="trk.upd">UPD s</th><th data-i18n="trk.q">Q</th><th></th></tr></thead>
+          <tbody id="tt-body"></tbody>
+        </table>
+        <div id="tt-empty" class="micro dim" data-i18n="trk.none">NO TRACKS — RADIATE TO DETECT</div>
+      </div>
       <div class="vp-foot">
         <div id="beam-roster"></div>
         <div id="legend"></div>

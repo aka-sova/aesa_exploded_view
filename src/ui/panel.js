@@ -4,6 +4,7 @@
 import { SCAN_PATTERNS, VIEW_MODES, CAMERA_PRESETS, QUADRANT_MODES, COLORS } from '../sim/state.js';
 import { PARTS, PART_BY_ID } from '../data/parts.js';
 import { PATTERN_PERIOD } from '../radar/scan.js';
+import { foldVelocity, rangeKmOf } from '../radar/doppler.js';
 import { t, tPart, getLang, setLang, onLangChange, applyStatic, LANGS } from '../i18n.js';
 
 const $ = (id) => document.getElementById(id);
@@ -158,10 +159,35 @@ export function mountPanel(state, api) {
     if (e.code === 'Space') { e.preventDefault(); toggleRun(); }
     else if (e.key >= '1' && e.key <= '4') api.setViewMode(VIEW_MODES[Number(e.key) - 1]);
     else if (e.code === 'KeyE') state.explodeTarget = state.explodeTarget > 0.5 ? 0 : 1;
+    else if (e.key === 'Escape') state.selectedTarget = null;
   });
 
   // ---- per-frame update -------------------------------------------------------------------
   const pill = $('status-pill');
+  const ttBody = $('tt-body');
+  ttBody.onclick = (e) => {
+    const row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    const id = Number(row.dataset.id);
+    state.selectedTarget = state.selectedTarget === id ? null : id;
+  };
+  const sgn = (v, d) => (v > 0 ? '+' : '') + v.toFixed(d);
+  function trackRows() {
+    const rows = [];
+    for (const tg of state.targets) {
+      const lost = state.time - tg.lostAt < 3;
+      const listed = tg.tracked || tg.tws || tg.confirmPending || lost || state.selectedTarget === tg.id;
+      if (!listed) continue;
+      const src = tg.tracked ? 'Q' + tg.trackedBy : tg.tws ? 'TWS' : '—';
+      const status = lost && !tg.tws && !tg.tracked ? ['lost', t('trk.lost')] : tg.confirmPending ? ['conf', t('trk.confirming')] : !tg.tws && !tg.tracked ? ['', t('trk.detected')] : ['', ''];
+      const sel = state.selectedTarget === tg.id;
+      const seen = sgn(foldVelocity(tg.vr, state.prf), 1) + (sel ? ` <span class="true">(${sgn(tg.vr, 0)})</span>` : '');
+      const upd = tg.lastSeen > -Infinity ? Math.max(0, state.time - tg.lastSeen).toFixed(1) : '—';
+      const q = (tg.tws || tg.tracked) ? '●'.repeat(Math.max(0, 3 - tg.misses)) + '○'.repeat(Math.min(3, tg.misses)) : '';
+      rows.push(`<tr data-id="${tg.id}"${sel ? ' class="sel"' : ''}><td>T${tg.id}</td><td class="src">${src}</td><td>${rangeKmOf(tg).toFixed(1)}</td><td>${sgn(tg.az * 57.2958, 1)} / ${sgn(tg.el * 57.2958, 1)}</td><td>${seen}</td><td>${upd}</td><td class="q">${q}</td><td class="st ${status[0]}">${status[1]}</td></tr>`);
+    }
+    return rows.join('');
+  }
   const tel = document.querySelectorAll('[data-tel]');
   const insp = { code: $('insp-code'), name: $('insp-name'), desc: $('insp-desc'), design: $('insp-design'), mlabel: $('insp-metric-label'), mval: $('insp-metric-value'), munit: $('insp-metric-unit') };
 
@@ -215,7 +241,12 @@ export function mountPanel(state, api) {
     {
       const tm = state.telemetry;
       setText($('pd-ambig'), t('pd.ambig', { v: tm.vUnambMs.toFixed(1), vb: tm.blindSpeedMs.toFixed(1), r: tm.unambRangeKm.toFixed(0) }));
-      setText($('pd-target'), tm.pdTargetId >= 0 ? t('pd.target', { id: tm.pdTargetId, vr: (tm.pdTargetVr > 0 ? '+' : '') + tm.pdTargetVr.toFixed(0), fv: (tm.pdTargetFv > 0 ? '+' : '') + tm.pdTargetFv.toFixed(1) }) : t('pd.none'));
+      const html = trackRows();
+      if (ttBody.__h !== html) { ttBody.__h = html; ttBody.innerHTML = html; }
+      setClass($('tt-empty'), 'hidden', html.length > 0);
+      const selT = state.selectedTarget !== null ? state.targets.find((x) => x.id === state.selectedTarget) : null;
+      if (selT) setText($('pd-target'), t('pd.target', { id: selT.id, vr: (selT.vr > 0 ? '+' : '') + selT.vr.toFixed(0), fv: (foldVelocity(selT.vr, state.prf) > 0 ? '+' : '') + foldVelocity(selT.vr, state.prf).toFixed(1) }));
+      else setText($('pd-target'), tm.pdTargetId >= 0 ? t('pd.target', { id: tm.pdTargetId, vr: (tm.pdTargetVr > 0 ? '+' : '') + tm.pdTargetVr.toFixed(0), fv: (tm.pdTargetFv > 0 ? '+' : '') + tm.pdTargetFv.toFixed(1) }) : t('pd.none'));
       setText($('rd-readout'), t('rd.readout', { prf: state.prf, v: tm.vUnambMs.toFixed(1), r: tm.unambRangeKm.toFixed(0), mti: t(state.mti ? 'rd.on' : 'rd.off') }));
     }
     {

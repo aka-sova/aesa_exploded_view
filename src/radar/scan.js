@@ -309,6 +309,7 @@ export function createScheduler(elementsApi) {
     target.tws = false;
     target.misses = 0;
     target.cooldownUntil = t + CONFIRM_COOLDOWN_S;
+    target.lostAt = t;
     logEvent(reason, target.id, t);
   }
 
@@ -494,7 +495,7 @@ export function createScheduler(elementsApi) {
       if (t - beam.lastUpdate >= TRACK_UPDATE_S) {
         beam.az = target.az;
         beam.el = target.el;
-        if (state.running) logDwell(1 + q, 'track', beam.lastUpdate, t, target.id);
+        if (state.running) { logDwell(1 + q, 'track', beam.lastUpdate, t, target.id); target.lastSeen = t; }
         beam.lastUpdate = t;
         beam.hops++;
       }

@@ -61,6 +61,16 @@ gates real detections and track updates, so a target at a blind speed is lost wi
 buried in clutter with it off. Raising the PRF widens the velocity window but folds range (Rᵤ
 shrinks). The **06 PULSE-DOPPLER** block has the map and MTI checkboxes and the ambiguity readouts.
 
+## Track table
+
+The **TRACKS** card under the headline lists every track (dedicated `Q3` or `TWS`), with range,
+az/el, the velocity the radar *sees* (folded), seconds since the last update, a three-dot quality
+indicator that empties with missed updates, and a status word while a detection is being
+confirmed or a track was just lost. Click a row — or a target marker in the 3-D view — to select
+it: its bracket and label turn white, the row shows true velocity next to the seen one, and the
+range–Doppler map pins to that target's **latest dwell** (live while the beam is on it, otherwise
+a dimmed snapshot stamped with its age). Esc or a second click unpins.
+
 ## Resource manager
 
 The pooled search beam is time-shared by a **resource manager** (`src/radar/scan.js`): confirmation

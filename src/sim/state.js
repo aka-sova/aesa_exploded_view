@@ -66,6 +66,7 @@ export class SimState {
   selectedPart = null;
   hoveredPart = null;
   hoveredQuadrant = null;
+  selectedTarget = null;      // target id pinned in the track table / range–Doppler map
   beams = [];
   targets = [];
   telemetry = defaultTelemetry();
@@ -74,6 +75,7 @@ export class SimState {
     this.running = false;
     this.time = 0;
     this.hoveredQuadrant = null;
+    this.selectedTarget = null;
     this.telemetry = defaultTelemetry();
   }
 }

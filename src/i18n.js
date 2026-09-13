@@ -69,6 +69,10 @@ const en = {
   'rd.title': 'RANGE–DOPPLER · CURRENT DWELL', 'rd.readout': 'PRF {prf} Hz · ±{v} m/s · Rᵤ {r} km · MTI {mti}', 'rd.on': 'ON', 'rd.off': 'OFF',
   'rd.axisV': 'VELOCITY m/s', 'rd.axisR': 'RANGE km', 'rd.clutter': 'CLUTTER',
   'tel.vUnamb': 'UNAMBIG. VELOCITY', 'tel.blindSpeed': 'BLIND SPEED', 'unit.mps': 'm/s',
+  'trk.title': 'TRACKS', 'trk.hint': 'CLICK A ROW OR A TARGET TO PIN THE RANGE–DOPPLER MAP · ESC TO UNPIN',
+  'trk.id': 'ID', 'trk.src': 'SRC', 'trk.range': 'RANGE km', 'trk.azel': 'AZ / EL °', 'trk.v': 'V SEEN m/s', 'trk.upd': 'UPD s', 'trk.q': 'Q',
+  'trk.confirming': 'CONFIRMING', 'trk.lost': 'LOST', 'trk.detected': 'DETECTED', 'trk.none': 'NO TRACKS — RADIATE TO DETECT',
+  'rd.live': 'T{id} · LIVE', 'rd.latest': 'T{id} · LATEST DWELL · {s} s AGO', 'rd.notSeen': 'T{id} · NOT YET SEEN',
   'theme.dark': 'DARK', 'theme.light': 'LIGHT', 'theme.title': 'Colour theme (the 3-D view stays dark: its glow is additive)',
 };
 
@@ -136,6 +140,10 @@ const ru = {
   'rd.title': 'ДАЛЬНОСТЬ–ДОПЛЕР · ТЕКУЩИЙ ДИСКРЕТ', 'rd.readout': 'ЧПИ {prf} Гц · ±{v} м/с · Rодн {r} км · СДЦ {mti}', 'rd.on': 'ВКЛ', 'rd.off': 'ВЫКЛ',
   'rd.axisV': 'СКОРОСТЬ м/с', 'rd.axisR': 'ДАЛЬНОСТЬ км', 'rd.clutter': 'ЗЕМЛЯ',
   'tel.vUnamb': 'ОДНОЗН. СКОРОСТЬ', 'tel.blindSpeed': 'СЛЕПАЯ СКОРОСТЬ', 'unit.mps': 'м/с',
+  'trk.title': 'ТРАССЫ', 'trk.hint': 'НАЖМИТЕ НА СТРОКУ ИЛИ ЦЕЛЬ, ЧТОБЫ ЗАКРЕПИТЬ КАРТУ ДАЛЬНОСТЬ–ДОПЛЕР · ESC — СНЯТЬ',
+  'trk.id': 'ИД', 'trk.src': 'ИСТ.', 'trk.range': 'ДАЛЬН. км', 'trk.azel': 'АЗ / УМ °', 'trk.v': 'V ВИДИМ. м/с', 'trk.upd': 'ОБН. с', 'trk.q': 'К',
+  'trk.confirming': 'ПОДТВЕРЖД.', 'trk.lost': 'ПОТЕРЯНА', 'trk.detected': 'ОБНАРУЖЕНА', 'trk.none': 'ТРАСС НЕТ — ВКЛЮЧИТЕ ИЗЛУЧЕНИЕ',
+  'rd.live': 'T{id} · В РЕАЛЬНОМ ВРЕМЕНИ', 'rd.latest': 'T{id} · ПОСЛЕДНИЙ ДИСКРЕТ · {s} с НАЗАД', 'rd.notSeen': 'T{id} · ЕЩЁ НЕ НАБЛЮДАЛАСЬ',
   'theme.dark': 'ТЁМНАЯ', 'theme.light': 'СВЕТЛАЯ', 'theme.title': 'Цветовая тема (3D-вид остаётся тёмным: его свечение аддитивное)',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)

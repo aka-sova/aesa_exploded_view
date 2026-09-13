@@ -24,6 +24,7 @@ export class Target {
     this.nextUpdate = 0;
     this.misses = 0;
     this.cooldownUntil = -Infinity;
+    this.lostAt = -Infinity;
   }
 }
 
