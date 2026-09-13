@@ -1,65 +1,86 @@
-// Resource-manager timeline: the last few seconds of dwells per beam lane, plus event markers.
+// Resource-manager timeline: the last few seconds of dwells, one lane for the pooled beam and one
+// per quadrant that is currently a dedicated track beam, plus event markers.
 import { t } from '../i18n.js';
 
-const H = 74, WINDOW_S = 6, LANES = 5, LABEL_W = 54, TOP = 12, ROW = 10, GAP = 2;
+const WINDOW_S = 6, LABEL_W = 78, TOP = 12, ROW = 10, GAP = 3, FOOT = 14;
 const TYPE_COLOR = { search: '#2ee6d6', track: '#f5a623', confirm: '#ffffff', acquire: '#7a5a1a', idle: '#3a4a5a' };
 const EVENT_COLOR = { detect: '#ffffff', confirmed: '#f5a623', lost: '#e24b4a', overload: '#e24b4a' };
 
 export function createTimeline(canvas) {
   const ctx = canvas.getContext('2d');
   const parent = canvas.parentElement;
-  let w = 400, dpr = 1;
+  let w = 400, h = 0, dpr = 1;
+  const lanes = [];   // { lane, label, color } rebuilt each frame from state
 
-  function resize() {
-    w = Math.max(160, parent.clientWidth);
+  function applySize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(H * dpr);
+    canvas.height = Math.round(h * dpr);
     canvas.style.width = w + 'px';
-    canvas.style.height = H + 'px';
+    canvas.style.height = h + 'px';
   }
-  new ResizeObserver(resize).observe(parent);
-  resize();
+  new ResizeObserver(() => { w = Math.max(160, parent.clientWidth); applySize(); }).observe(parent);
+  w = Math.max(160, parent.clientWidth);
 
   const x = (time, now) => LABEL_W + ((w - LABEL_W - 4) * (time - now + WINDOW_S)) / WINDOW_S;
-  const laneY = (lane) => TOP + lane * (ROW + GAP);
+  const rowY = (row) => TOP + row * (ROW + GAP);
+
+  function buildLanes(state) {
+    lanes.length = 0;
+    const pooled = [];
+    for (let q = 0; q < 4; q++) if (state.quadrantModes[q] === 'search') pooled.push('Q' + q);
+    lanes.push({ lane: 0, label: pooled.length ? `${t('tl.pooled')} ${pooled.join(' ')}` : t('tl.pooled'), color: '#e6edf3' });
+    for (let q = 0; q < 4; q++) {
+      if (state.quadrantModes[q] !== 'track') continue;
+      const beam = state.beams.find((b) => b.type === 'track' && b.quadrants[0] === q);
+      const tgt = beam && beam.targetId !== null ? ` → T${beam.targetId}` : ` · ${t('roster.acquiring')}`;
+      lanes.push({ lane: 1 + q, label: `Q${q}${tgt}`, color: '#f5a623' });
+    }
+    const need = TOP + lanes.length * (ROW + GAP) + FOOT;
+    if (need !== h) { h = need; applySize(); }
+  }
 
   function draw(manager, now, state) {
+    buildLanes(state);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, H);
+    ctx.clearRect(0, 0, w, h);
     ctx.font = '500 8px "Geist Mono", "JetBrains Mono", Consolas, monospace';
     ctx.textBaseline = 'middle';
 
-    // lane rails + labels
-    const labels = [t('tl.pooled'), 'Q0', 'Q1', 'Q2', 'Q3'];
-    for (let l = 0; l < LANES; l++) {
-      const y = laneY(l);
+    const rowOf = new Map();
+    lanes.forEach((l, i) => rowOf.set(l.lane, i));
+    // rails + labels
+    for (let i = 0; i < lanes.length; i++) {
+      const y = rowY(i);
       ctx.fillStyle = 'rgba(255,255,255,0.05)';
       ctx.fillRect(LABEL_W, y, w - LABEL_W - 4, ROW);
-      ctx.fillStyle = l === 0 ? '#e6edf3' : state.quadrantModes[l - 1] === 'track' ? '#f5a623' : '#55606c';
+      ctx.fillStyle = lanes[i].color;
       ctx.textAlign = 'left';
-      ctx.fillText(labels[l], 2, y + ROW / 2);
+      ctx.fillText(lanes[i].label, 2, y + ROW / 2, LABEL_W - 6);
     }
     // second ticks
+    const railBottom = rowY(lanes.length - 1) + ROW + 2;
     ctx.fillStyle = '#55606c';
     ctx.textAlign = 'center';
     for (let s = 0; s <= WINDOW_S; s++) {
       const xx = Math.round(x(now - s, now)) + 0.5;
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.beginPath(); ctx.moveTo(xx, TOP - 2); ctx.lineTo(xx, laneY(LANES - 1) + ROW + 2); ctx.stroke();
-      if (s > 0 && s < WINDOW_S) ctx.fillText(`−${s}s`, xx, H - 5);
+      ctx.beginPath(); ctx.moveTo(xx, TOP - 2); ctx.lineTo(xx, railBottom); ctx.stroke();
+      if (s > 0 && s < WINDOW_S) ctx.fillText(`−${s}s`, xx, h - 6);
     }
-    // dwells
+    // dwells: pooled blocks touch; dedicated updates keep a 1 px gap so they read as a train of dwells
     const d = manager.dwells;
     for (let i = 0; i < d.length; i++) {
       const it = d[i];
       if (it.end < now - WINDOW_S) continue;
-      const x0 = Math.max(LABEL_W, x(it.start, now)), x1 = x(Math.min(it.end, now), now);
+      const row = rowOf.get(it.lane);
+      if (row === undefined) continue;
+      const x0 = Math.max(LABEL_W, x(it.start, now)), x1 = x(Math.min(it.end, now), now) - (it.lane ? 1 : 0);
       if (x1 <= x0) continue;
       ctx.fillStyle = TYPE_COLOR[it.type] || TYPE_COLOR.idle;
-      ctx.fillRect(x0, laneY(it.lane), Math.max(1, x1 - x0), ROW);
+      ctx.fillRect(x0, rowY(row), Math.max(1, x1 - x0), ROW);
     }
-    // events (markers above lane 0)
+    // events (markers above the pooled lane)
     const e = manager.events;
     for (let i = 0; i < e.length; i++) {
       const ev = e[i];
@@ -71,17 +92,17 @@ export function createTimeline(canvas) {
     // now line
     const xn = Math.round(x(now, now)) + 0.5;
     ctx.strokeStyle = '#e6edf3';
-    ctx.beginPath(); ctx.moveTo(xn, TOP - 8); ctx.lineTo(xn, laneY(LANES - 1) + ROW + 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xn, TOP - 8); ctx.lineTo(xn, railBottom); ctx.stroke();
     // legend
     ctx.textAlign = 'right';
     let lx = w - 4;
     for (const [type, key] of [['confirm', 'tl.confirm'], ['track', 'tl.track'], ['search', 'tl.search']]) {
       const label = t(key);
       ctx.fillStyle = '#7d8996';
-      ctx.fillText(label, lx, H - 5);
+      ctx.fillText(label, lx, h - 6);
       lx -= ctx.measureText(label).width + 10;
       ctx.fillStyle = TYPE_COLOR[type];
-      ctx.fillRect(lx, H - 8, 6, 6);
+      ctx.fillRect(lx, h - 9, 6, 6);
       lx -= 12;
     }
   }
