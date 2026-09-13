@@ -55,6 +55,7 @@ const en = {
   'foot.left': 'CONCEPTUAL ENGINEERING VISUALIZATION', 'foot.band': 'X-BAND 9.5 GHz / λ 31.6 mm /', 'foot.calls': 'CALLS /', 'foot.fps': 'FPS',
   'dome.target': 'T{id} · {km} km · σ {rcs} m²',
   'lang.en': 'EN', 'lang.ru': 'RU',
+  'font.smaller': 'Smaller text', 'font.larger': 'Larger text', 'font.reset': 'Reset text size to 100 %',
 };
 
 const ru = {
@@ -107,6 +108,7 @@ const ru = {
   'foot.left': 'КОНЦЕПТУАЛЬНАЯ ИНЖЕНЕРНАЯ ВИЗУАЛИЗАЦИЯ', 'foot.band': 'X-ДИАПАЗОН 9,5 ГГц / λ 31,6 мм /', 'foot.calls': 'ВЫЗОВОВ /', 'foot.fps': 'К/С',
   'dome.target': 'T{id} · {km} км · σ {rcs} м²',
   'lang.en': 'EN', 'lang.ru': 'RU',
+  'font.smaller': 'Мельче текст', 'font.larger': 'Крупнее текст', 'font.reset': 'Сбросить размер текста на 100 %',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)
   'part.radome.name': 'Обтекатель',
