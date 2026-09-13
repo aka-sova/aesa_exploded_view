@@ -108,6 +108,7 @@ export function mountPanel(state, api) {
 
   // Everything built above that carries translated text is (re)labelled here.
   let shownPart = undefined;
+  const measureCanvas = document.createElement('canvas').getContext('2d');
   function relabel() {
     for (const m of VIEW_MODES) viewBtns[m].querySelector('.lbl').textContent = t(`view.${m}`);
     for (const c of CAMERA_PRESETS) camBtns[c].textContent = t(`cam.${c}`);
@@ -115,6 +116,7 @@ export function mountPanel(state, api) {
     for (const p of SCAN_PATTERNS) patBtns[p].querySelector('span').textContent = t(`pattern.${p}`);
     $('legend').innerHTML = LEGEND.map(([g, c, k]) => `<span class="chip"><i style="color:${hex(c)}">${g}</i>${t(k)}</span>`).join('');
     $('track-table').title = t('trk.hint');
+    pinTrackColumns();
     shownPart = undefined;
   }
   relabel();
@@ -173,6 +175,21 @@ export function mountPanel(state, api) {
     state.selectedTarget = state.selectedTarget === id ? null : id;
   };
   const sgn = (v, d) => (v > 0 ? '+' : '') + v.toFixed(d);
+  // Pin every column to the widest string it can ever show (measured in the table's own font,
+  // so Cyrillic fallback glyphs are accounted for) — the card must never change size with values.
+  function pinTrackColumns() {
+    const ths = document.querySelectorAll('.trk-table thead th');
+    const font = getComputedStyle(ths[0]).font;
+    measureCanvas.font = font;
+    const widest = (strs) => Math.max(...strs.map((x) => measureCanvas.measureText(x).width));
+    const samples = [
+      ['T0', t('trk.id')], ['TWS', 'Q3', '—', t('trk.src')], ['000.0', t('trk.range')], ['−00.0 / +00.0', t('trk.azel')],
+      ['+00.0 (+000)', t('trk.v')], ['00.0', t('trk.upd')], ['●●●', t('trk.q')], [t('trk.confirming'), t('trk.lost'), t('trk.detected')],
+    ];
+    let total = 0;
+    ths.forEach((th, i) => { const w = Math.ceil(widest(samples[i]) + 8); th.style.width = w + 'px'; total += w; });
+    document.querySelector('.trk-table').style.width = total + 'px';
+  }
   // Rows are created once per target and updated in place: rebuilding the tbody every frame
   // would replace the element between a real mouse-down and mouse-up and swallow the click.
   const rowEls = new Map();
