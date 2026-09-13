@@ -69,7 +69,7 @@ const en = {
   'rd.title': 'RANGE–DOPPLER · CURRENT DWELL', 'rd.readout': 'PRF {prf} Hz · ±{v} m/s · Rᵤ {r} km · MTI {mti}', 'rd.on': 'ON', 'rd.off': 'OFF',
   'rd.axisV': 'VELOCITY m/s', 'rd.axisR': 'RANGE km', 'rd.clutter': 'CLUTTER',
   'tel.vUnamb': 'UNAMBIG. VELOCITY', 'tel.blindSpeed': 'BLIND SPEED', 'unit.mps': 'm/s',
-  'trk.title': 'TRACKS', 'trk.hint': 'CLICK A ROW OR A TARGET TO PIN THE RANGE–DOPPLER MAP · ESC TO UNPIN',
+  'trk.title': 'TRACKS', 'trk.hint': 'CLICK A ROW OR A TARGET TO PIN THE RANGE–DOPPLER MAP · ESC UNPINS',
   'trk.id': 'ID', 'trk.src': 'SRC', 'trk.range': 'RANGE km', 'trk.azel': 'AZ / EL °', 'trk.v': 'V SEEN m/s', 'trk.upd': 'UPD s', 'trk.q': 'Q',
   'trk.confirming': 'CONFIRMING', 'trk.lost': 'LOST', 'trk.detected': 'DETECTED', 'trk.none': 'NO TRACKS — RADIATE TO DETECT',
   'rd.live': 'T{id} · LIVE', 'rd.latest': 'T{id} · LATEST DWELL · {s} s AGO', 'rd.notSeen': 'T{id} · NOT YET SEEN',

@@ -172,21 +172,44 @@ export function mountPanel(state, api) {
     state.selectedTarget = state.selectedTarget === id ? null : id;
   };
   const sgn = (v, d) => (v > 0 ? '+' : '') + v.toFixed(d);
-  function trackRows() {
-    const rows = [];
+  // Rows are created once per target and updated in place: rebuilding the tbody every frame
+  // would replace the element between a real mouse-down and mouse-up and swallow the click.
+  const rowEls = new Map();
+  function rowFor(id) {
+    let tr = rowEls.get(id);
+    if (tr) return tr;
+    tr = document.createElement('tr');
+    tr.dataset.id = String(id);
+    tr.innerHTML = `<td>T${id}</td><td class="src"></td><td></td><td></td><td><span class="seen"></span> <span class="true"></span></td><td></td><td class="q"></td><td class="st"></td>`;
+    rowEls.set(id, tr);
+    return tr;
+  }
+  function updateTrackTable() {
+    let k = 0;
     for (const tg of state.targets) {
       const lost = state.time - tg.lostAt < 3;
       const listed = tg.tracked || tg.tws || tg.confirmPending || lost || state.selectedTarget === tg.id;
       if (!listed) continue;
-      const src = tg.tracked ? 'Q' + tg.trackedBy : tg.tws ? 'TWS' : '—';
-      const status = lost && !tg.tws && !tg.tracked ? ['lost', t('trk.lost')] : tg.confirmPending ? ['conf', t('trk.confirming')] : !tg.tws && !tg.tracked ? ['', t('trk.detected')] : ['', ''];
+      const tr = rowFor(tg.id);
+      const c = tr.children;
       const sel = state.selectedTarget === tg.id;
-      const seen = sgn(foldVelocity(tg.vr, state.prf), 1) + (sel ? ` <span class="true">(${sgn(tg.vr, 0)})</span>` : '');
-      const upd = tg.lastSeen > -Infinity ? Math.max(0, state.time - tg.lastSeen).toFixed(1) : '—';
-      const q = (tg.tws || tg.tracked) ? '●'.repeat(Math.max(0, 3 - tg.misses)) + '○'.repeat(Math.min(3, tg.misses)) : '';
-      rows.push(`<tr data-id="${tg.id}"${sel ? ' class="sel"' : ''}><td>T${tg.id}</td><td class="src">${src}</td><td>${rangeKmOf(tg).toFixed(1)}</td><td>${sgn(tg.az * 57.2958, 1)} / ${sgn(tg.el * 57.2958, 1)}</td><td>${seen}</td><td>${upd}</td><td class="q">${q}</td><td class="st ${status[0]}">${status[1]}</td></tr>`);
+      setClass(tr, 'sel', sel);
+      setText(c[1], tg.tracked ? 'Q' + tg.trackedBy : tg.tws ? 'TWS' : '—');
+      setText(c[2], rangeKmOf(tg).toFixed(1));
+      setText(c[3], `${sgn(tg.az * 57.2958, 1)} / ${sgn(tg.el * 57.2958, 1)}`);
+      setText(c[4].children[0], sgn(foldVelocity(tg.vr, state.prf), 1));
+      setText(c[4].children[1], sel ? `(${sgn(tg.vr, 0)})` : '');
+      setText(c[5], tg.lastSeen > -Infinity ? Math.max(0, state.time - tg.lastSeen).toFixed(1) : '—');
+      setText(c[6], (tg.tws || tg.tracked) ? '●'.repeat(Math.max(0, 3 - tg.misses)) + '○'.repeat(Math.min(3, tg.misses)) : '');
+      const st = lost && !tg.tws && !tg.tracked ? ['lost', t('trk.lost')] : tg.confirmPending ? ['conf', t('trk.confirming')] : !tg.tws && !tg.tracked ? ['', t('trk.detected')] : ['', ''];
+      setText(c[7], st[1]);
+      setClass(c[7], 'lost', st[0] === 'lost');
+      setClass(c[7], 'conf', st[0] === 'conf');
+      if (ttBody.children[k] !== tr) ttBody.insertBefore(tr, ttBody.children[k] || null);
+      k++;
     }
-    return rows.join('');
+    while (ttBody.children.length > k) ttBody.lastElementChild.remove();
+    return k;
   }
   const tel = document.querySelectorAll('[data-tel]');
   const insp = { code: $('insp-code'), name: $('insp-name'), desc: $('insp-desc'), design: $('insp-design'), mlabel: $('insp-metric-label'), mval: $('insp-metric-value'), munit: $('insp-metric-unit') };
@@ -241,9 +264,7 @@ export function mountPanel(state, api) {
     {
       const tm = state.telemetry;
       setText($('pd-ambig'), t('pd.ambig', { v: tm.vUnambMs.toFixed(1), vb: tm.blindSpeedMs.toFixed(1), r: tm.unambRangeKm.toFixed(0) }));
-      const html = trackRows();
-      if (ttBody.__h !== html) { ttBody.__h = html; ttBody.innerHTML = html; }
-      setClass($('tt-empty'), 'hidden', html.length > 0);
+      setClass($('tt-empty'), 'hidden', updateTrackTable() > 0);
       const selT = state.selectedTarget !== null ? state.targets.find((x) => x.id === state.selectedTarget) : null;
       if (selT) setText($('pd-target'), t('pd.target', { id: selT.id, vr: (selT.vr > 0 ? '+' : '') + selT.vr.toFixed(0), fv: (foldVelocity(selT.vr, state.prf) > 0 ? '+' : '') + foldVelocity(selT.vr, state.prf).toFixed(1) }));
       else setText($('pd-target'), tm.pdTargetId >= 0 ? t('pd.target', { id: tm.pdTargetId, vr: (tm.pdTargetVr > 0 ? '+' : '') + tm.pdTargetVr.toFixed(0), fv: (tm.pdTargetFv > 0 ? '+' : '') + tm.pdTargetFv.toFixed(1) }) : t('pd.none'));
