@@ -40,7 +40,10 @@ export const tutorialEn = {
   'tut.subarrays.try': 'Click the quadrant tiles to change their tasking.',
 
   'tut.agile.title': 'How a real AESA does it: time-sharing',
-  'tut.agile.body': `Splitting the face is one option. What a real AESA mostly does is <b>interleave in time</b>: the whole aperture hops through search positions and, every few hops, spends one dwell on a known target (shown amber). Because a hop costs microseconds, a single array can search a volume, track dozens of targets and update missile guidance within the same second.`,
+  'tut.agile.body': `Splitting the face is one option. What a real AESA mostly does is <b>interleave in time</b>: the whole aperture hops through search positions and, whenever a track is due, spends one short dwell on it (shown amber; white for a confirmation of a fresh detection). Because a hop costs microseconds, a single array can search a volume, track dozens of targets and update missile guidance within the same second.`,
+  'tut.manager.title': 'The resource manager',
+  'tut.manager.body': `The strip at the bottom of the view is the radar's <b>schedule</b>: every dwell of the pooled beam in the last six seconds — teal search positions, white <b>confirmation</b> dwells fired at fresh detections, amber <b>track updates</b> due every revisit interval — plus the dedicated quadrant beams on their own lanes. Priority is confirm > track > search, and the search pattern only advances during its own dwells, so every track you carry stretches the <b>search frame</b>. When track load exceeds the cap, the manager sheds the lowest-priority (farthest) track rather than let search starve.`,
+  'tut.manager.try': 'Set REVISIT to 0.3 s and watch search time collapse and the frame stretch; lower TRACK CAP until a track is dropped (red marker).',
 
   'tut.signal.title': 'Inside: the signal path',
   'tut.signal.body': `<b>Purple</b>: the RF chain. The exciter's waveform goes through the manifold and the T/R modules to the elements, and echoes come back the same way — the dashes run backwards for a moment when an echo is received.<br><br><b>Teal dashes</b>: the beam steering controller's commands, which flash to all four quadrants on every hop. Those commands are what makes the array "electronically scanned".`,
@@ -103,7 +106,10 @@ export const tutorialRu = {
   'tut.subarrays.try': 'Нажимайте на плитки квадрантов, чтобы менять их задачу.',
 
   'tut.agile.title': 'Как это делает настоящая АФАР: разделение по времени',
-  'tut.agile.body': `Разделение полотна — лишь один из вариантов. В основном настоящая АФАР <b>чередует задачи во времени</b>: вся апертура перескакивает по позициям обзора и через каждые несколько скачков тратит один дискрет на известную цель (показан янтарным). Поскольку скачок стоит микросекунды, одна решётка за одну секунду успевает обозревать пространство, сопровождать десятки целей и обновлять наведение ракет.`,
+  'tut.agile.body': `Разделение полотна — лишь один из вариантов. В основном настоящая АФАР <b>чередует задачи во времени</b>: вся апертура перескакивает по позициям обзора и, как только подходит срок обновления трассы, тратит на неё один короткий дискрет (янтарный; белый — подтверждение свежего обнаружения). Поскольку скачок стоит микросекунды, одна решётка за одну секунду успевает обозревать пространство, сопровождать десятки целей и обновлять наведение ракет.`,
+  'tut.manager.title': 'Диспетчер ресурса',
+  'tut.manager.body': `Лента внизу окна — <b>расписание</b> РЛС: каждый дискрет общего луча за последние шесть секунд — бирюзовые позиции обзора, белые дискреты <b>подтверждения</b> по свежим обнаружениям, янтарные <b>обновления трасс</b>, назначаемые через интервал обновления, — а также выделенные квадрантные лучи на своих дорожках. Приоритет: подтверждение > трасса > обзор, и обзор продвигается только в своих дискретах, поэтому каждая сопровождаемая трасса удлиняет <b>цикл обзора</b>. Когда нагрузка сопровождения превышает лимит, диспетчер сбрасывает трассу с низшим приоритетом (самую дальнюю), а не даёт обзору остановиться.`,
+  'tut.manager.try': 'Установите ОБНОВЛ. 0,3 с и наблюдайте, как схлопывается время обзора и растёт цикл; уменьшайте ЛИМИТ СОПР., пока трасса не будет сброшена (красная метка).',
 
   'tut.signal.title': 'Внутри: тракт сигнала',
   'tut.signal.body': `<b>Фиолетовый</b> — ВЧ-тракт. Сигнал возбудителя проходит через коллектор и ППМ к излучателям, а эхо возвращается тем же путём — при приёме эха штрихи на мгновение бегут назад.<br><br><b>Бирюзовый пунктир</b> — команды контроллера луча, которые при каждом скачке уходят во все четыре квадранта. Именно эти команды делают решётку «электронно сканируемой».`,

@@ -258,7 +258,7 @@ export function createDome(scene) {
     for (let i = 0; i < MAX_TARGETS; i++) {
       const tg = state.targets[i];
       const label = labels[i];
-      if (!tg || (!tg.detected && !tg.tracked)) {
+      if (!tg || (!tg.detected && !tg.tracked && !tg.tws)) {
         _m.makeScale(0, 0, 0);
         markers.setMatrixAt(i, _m);
         brackets[i].visible = false;
@@ -270,14 +270,14 @@ export function createDome(scene) {
       _s.setScalar(sc);
       _q.identity();
       markers.setMatrixAt(i, _m.compose(_dir, _q, _s));
-      if (tg.tracked) {
+      if (tg.tracked || tg.tws) {
         markers.setColorAt(i, AMBER);
         brackets[i].visible = true;
         brackets[i].position.copy(_dir);
         brackets[i].lookAt(0, 0, 0);
         label.obj.visible = true;
         label.obj.position.copy(_dir).y += 0.4;
-        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs });
+        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs }) + (tg.tws && !tg.tracked ? ' · ' + t('dome.tws') : '');
         if (text !== label.text) { label.text = text; label.el.textContent = text; }
       } else {
         const age = Math.max(0, state.time - tg.lastSeen);

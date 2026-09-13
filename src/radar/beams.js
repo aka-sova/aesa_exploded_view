@@ -337,7 +337,7 @@ export function createBeams(scene, elementsApi) {
     p.live = true;
     p.seq = ++seq;
     p.beam = beam;
-    p.type = beam.type;
+    p.type = beam.dwellType || beam.type;
     p.dist = 0;
     p.prevDist = 0;
     p.travel = DOME_RADIUS;

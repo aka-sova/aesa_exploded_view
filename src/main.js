@@ -15,6 +15,7 @@ import { createBeams } from './radar/beams.js';
 import { createDome } from './radar/dome.js';
 import { createPatternView } from './radar/pattern.js';
 import { createPatternPlot } from './ui/patternplot.js';
+import { createTimeline } from './ui/timeline.js';
 import { createTargets, updateTargets, markIlluminated } from './sim/targets.js';
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
@@ -205,6 +206,7 @@ onThemeChange((th) => {
 });
 const chart = createStripChart(document.getElementById('strip-chart'));
 const patternPlot = createPatternPlot(document.getElementById('pattern-plot'));
+const timeline = createTimeline(document.getElementById('timeline'));
 let patternVersion = -1;
 
 // ---- resize ------------------------------------------------------------------------------------
@@ -307,6 +309,7 @@ function tick(dt) {
     renderer.autoClear = true;
   }
   labelRenderer.render(scene, camera);
+  if (state.timelineVisible) timeline.draw(scheduler.manager, state.time, state);
 
   stats.calls = renderer.info.render.calls;
   frames++; fpsClock += dt;

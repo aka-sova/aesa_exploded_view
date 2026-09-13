@@ -140,10 +140,12 @@ export function mountPanel(state, api) {
     el.onchange = () => { state[key] = el.checked; };
     return () => { if (el.checked !== state[key]) el.checked = state[key]; };
   };
-  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts')];
+  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts'), chk('rm-timeline', 'timelineVisible')];
   syncSliders.push(
     bind('spacing', () => state.spacingLambda, (v) => { state.spacingLambda = v; }, (v) => v.toFixed(2) + ' λ'),
     bind('taper', () => Math.round(state.taper * 100), (v) => { state.taper = v / 100; }, (v) => v + ' %'),
+    bind('revisit', () => state.trackRevisit, (v) => { state.trackRevisit = v; }, (v) => v.toFixed(1) + ' s'),
+    bind('loadcap', () => Math.round(state.trackLoadCap * 100), (v) => { state.trackLoadCap = v / 100; }, (v) => v + ' %'),
   );
   $('btn-fail').onclick = () => { state.failedFraction = state.failedFraction > 0 ? 0 : 0.15; };
   $('btn-jam').onclick = () => { state.jamming = !state.jamming; if (!state.jamming) state.nulling = false; };
@@ -174,10 +176,12 @@ export function mountPanel(state, api) {
     const qs = b.quadrants.map((q) => 'Q' + q).join(' ');
     if (b.type === 'search') {
       const period = PATTERN_PERIOD[state.scanPattern];
+      const pt = b.patternTime ?? state.time * state.scanRate;
       let where;
-      if (state.scanPattern === 'raster') where = t('roster.bar', { n: Math.floor(((state.time * state.scanRate) % 16) / 2) + 1 });
-      else if (state.scanPattern === 'agile') where = b.trackDwell ? t('roster.trackDwell') : t('roster.hop', { n: b.hops });
-      else where = `${Math.round((((state.time * state.scanRate) % period) / period) * 100)} %`;
+      if (b.trackDwell) where = t('roster.trackDwell');
+      else if (state.scanPattern === 'raster') where = t('roster.bar', { n: Math.floor((pt % 16) / 2) + 1 });
+      else if (state.scanPattern === 'agile') where = t('roster.hop', { n: b.hops });
+      else where = `${Math.round(((pt % period) / period) * 100)} %`;
       const pps = (2 + (8 * Math.log(state.prf / 200)) / Math.log(20)).toFixed(1);
       return t('roster.search', { id: b.id, qs, pattern: t(`patternShort.${state.scanPattern}`), where, width: b.widthDeg.toFixed(1), pps });
     }
@@ -205,6 +209,13 @@ export function mountPanel(state, api) {
     for (const s of syncSliders) s();
     for (const c of syncChecks) c();
     setClass($('pat-plot-wrap'), 'hidden', !state.patternCuts);
+    setClass($('timeline-wrap'), 'hidden', !state.timelineVisible);
+    {
+      const tm = state.telemetry;
+      setText($('rm-load'), t('rm.load', { s: tm.rmSearchPct.toFixed(0), t: tm.rmTrackPct.toFixed(0), c: tm.rmConfirmPct.toFixed(0) }));
+      setText($('rm-tracks'), t('rm.tracks', { n: tm.rmTracks, f: tm.rmFrameS ? tm.rmFrameS.toFixed(1) + ' s' : '—' }));
+      setClass($('rm-overload'), 'hidden', !tm.rmOverload);
+    }
     {
       const tm = state.telemetry;
       let txt = t('pat.readout', { bw: tm.patternBwDeg.toFixed(1), sll: tm.patternSllDb.toFixed(1), peak: tm.patternPeakDb.toFixed(1) });

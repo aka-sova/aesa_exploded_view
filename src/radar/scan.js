@@ -145,7 +145,6 @@ const PHASE_CENTRES = [
 ];
 const ACQUIRE_FALLBACK_S = 1.5;             // acquiring → take nearest-boresight target after this
 const ACQ_ORBIT_RAD = 8 * deg, ACQ_ORBIT_RATE = 1.2;
-const AGILE_TRACK_EVERY = 4;                // every 4th agile hop is a track dwell
 const COS_SCAN_MAX = Math.cos(SCAN_MAX);
 
 const _azel = { az: 0, el: 0 };
@@ -223,14 +222,33 @@ function nearestBoresight(targets) {
   return best;
 }
 
+// ---------------------------------------------------------------------------
+// Resource manager — the pooled beam is time-shared between tasks
+// ---------------------------------------------------------------------------
+
+const SEARCH_DWELL = 0.1;      // s per search position (sim time, ~10× slow)
+const TRACK_DWELL = 0.06;      // s per track-while-scan update
+const CONFIRM_DWELL = 0.08;    // s to confirm a fresh detection
+const LOG_WINDOW = 10;         // s of dwell history kept for the timeline
+const LOAD_WINDOW = 4;         // s over which task occupancy is measured
+const MAX_MISSES = 3;          // consecutive missed updates before a TWS track is dropped
+const DETECT_SNR = 0.15;       // analytic detection threshold for a dedicated dwell
+const CONFIRM_WINDOW_S = 0.5;  // a detection must be this fresh to request confirmation
+const CONFIRM_COOLDOWN_S = 2;  // after a failed confirm / a drop, before trying again
+const DROP_COOLDOWN_S = 2;     // minimum spacing between overload drops
+
 /**
- * Discrete beam scheduler. Writes `state.beams` (stable Beam objects, reordered only when
- * the set changes), target tracked/trackedBy flags, and the beam-related telemetry.
+ * Discrete beam scheduler with a resource manager. Writes `state.beams` (stable Beam objects,
+ * reordered only when the set changes), target tracked / TWS flags, the dwell log used by the
+ * timeline strip, and the beam-related telemetry.
  */
 export function createScheduler(elementsApi) {
   const search = makeBeam(0, 'search');
   const tracks = [makeBeam(1, 'track'), makeBeam(2, 'track'), makeBeam(3, 'track'), makeBeam(4, 'track')];
   for (let q = 0; q < 4; q++) setQuadrants(tracks[q], 1 << q);
+  search.dwellType = 'search';
+  search.trackDwell = false;
+  search.patternTime = 0;
 
   const trackActive = [false, false, false, false];
   let searchMask = 0;     // quadrants pooled into the search beam
@@ -239,40 +257,193 @@ export function createScheduler(elementsApi) {
   let beamsRef = null;    // state.beams array we last filled
   let lastState = null;
 
+  // manager state
+  let patternTime = 0;                                   // advances only during search dwells
+  const dwell = { type: 'idle', start: 0, until: 0, targetId: null };
+  const manager = {
+    dwells: [],   // { lane, type, start, end, id }  lane 0 = pooled beam, 1..4 = dedicated quadrants
+    events: [],   // { type: 'detect'|'confirmed'|'lost'|'overload', id, t }
+    stats: { search: 0, track: 0, confirm: 0, idle: 0, twsTracks: 0, frameS: 0, overload: false },
+  };
+  let overloadUntil = -Infinity, lastDrop = -Infinity, lastLoadCheck = -Infinity;
+
   const activeCount = elementsApi && typeof elementsApi.activeCountByQuadrant === 'function'
     ? (q, state) => elementsApi.activeCountByQuadrant(q)
     : (q, state) => Math.round(ELEMENTS_PER_QUADRANT * (1 - state.failedFraction));
 
-  function updateSearch(step, state) {
-    const pattern = PATTERNS[state.scanPattern] || PATTERNS.raster;
-    pattern(state.time * state.scanRate, _azel);
-    const ci = cellIndexClamped(_azel.az, _azel.el);
-    const agile = state.scanPattern === 'agile';
+  function logDwell(lane, type, start, end, id) { manager.dwells.push({ lane, type, start, end, id }); }
+  function logEvent(type, id, t) { manager.events.push({ type, id, t }); }
+  function prune(t) {
+    const d = manager.dwells; let k = 0;
+    while (k < d.length && d[k].end < t - LOG_WINDOW) k++;
+    if (k) d.splice(0, k);
+    const e = manager.events; k = 0;
+    while (k < e.length && e[k].t < t - LOG_WINDOW) k++;
+    if (k) e.splice(0, k);
+  }
 
-    if (ci !== searchCell) {
-      searchCell = ci;
-      search.hops++;
-      search.dwell = 0;
-      search.lastUpdate = state.time;
-      cellCenter(ci, _azel);
-      search.az = _azel.az;
-      search.el = _azel.el;
-      search.color = COLORS.search;
-      if (agile && search.hops % AGILE_TRACK_EVERY === 3) {
-        // Interleaved track dwell: revisit the freshest detection with the full search aperture.
-        const t = mostRecentlySeen(state.targets);
-        if (t !== null) {
-          search.az = t.az;
-          search.el = t.el;
-          search.color = COLORS.track;
-        }
+  // Analytic outcome of a dedicated dwell on a target (the visual echoes are 1-in-100 samples
+  // and too sparse to gate the tracker on): same SNR law as beams.js, same jamming rules.
+  function dwellSnr(target, state) {
+    const rr = (0.8 * DOME_RADIUS) / target.range;
+    let snr = search.gain * target.rcs * rr * rr * rr * rr;
+    if (state.jamming) {
+      if (!state.nulling && Math.abs(target.az - JAM_AZ) < 10 * deg) snr = 0;
+      else if (state.nulling) {
+        const c = Math.cos(target.el) * Math.cos(target.az - JAM_AZ) * Math.cos(JAM_EL) + Math.sin(target.el) * Math.sin(JAM_EL);
+        if (c > Math.cos(search.widthDeg * deg)) snr = 0;
       }
-    } else {
-      search.dwell += step;
-      if (!agile) search.color = COLORS.search;
+    }
+    return snr;
+  }
+
+  function illuminate(target, snr, t) {
+    target.lastSeen = t;
+    target.detected = true;
+    target.strength = Math.max(target.strength, Math.min(1, snr));
+    target.ping = 1;
+  }
+
+  function dropTrack(target, reason, t) {
+    target.tws = false;
+    target.misses = 0;
+    target.cooldownUntil = t + CONFIRM_COOLDOWN_S;
+    logEvent(reason, target.id, t);
+  }
+
+  function beginDwell(type, duration, target, t) {
+    dwell.type = type;
+    dwell.start = t;
+    dwell.until = t + duration;
+    dwell.targetId = target ? target.id : null;
+    search.trackDwell = type !== 'search';
+    search.dwellType = type === 'search' ? 'search' : 'track';
+    search.color = type === 'search' ? COLORS.search : type === 'track' ? COLORS.track : COLORS.detect;
+    if (target) { search.az = target.az; search.el = target.el; }
+  }
+
+  function closeDwell(state, t) {
+    if (dwell.type === 'idle') return;
+    logDwell(0, dwell.type, dwell.start, dwell.until, dwell.targetId);
+    if (dwell.type === 'search') return;
+    const target = findTarget(state.targets, dwell.targetId);
+    if (!target) return;
+    const snr = dwellSnr(target, state);
+    const hit = snr > DETECT_SNR;
+    if (dwell.type === 'confirm') {
+      target.confirmPending = false;
+      if (hit) {
+        illuminate(target, snr, t);
+        target.tws = true;
+        target.misses = 0;
+        target.nextUpdate = t + state.trackRevisit;
+        logEvent('confirmed', target.id, t);
+      } else {
+        target.cooldownUntil = t + CONFIRM_COOLDOWN_S;
+      }
+    } else if (dwell.type === 'track') {
+      if (hit) {
+        illuminate(target, snr, t);
+        target.misses = 0;
+      } else {
+        target.misses++;
+      }
+      target.nextUpdate = t + state.trackRevisit;
+      if (target.misses >= MAX_MISSES) dropTrack(target, 'lost', t);
     }
   }
 
+  function startNextDwell(state, t) {
+    const targets = state.targets;
+    // 1. confirmation of the oldest fresh detection
+    let pick = null;
+    for (let i = 0; i < targets.length; i++) {
+      const tg = targets[i];
+      if (tg.confirmPending && (pick === null || tg.confirmRequested < pick.confirmRequested)) pick = tg;
+    }
+    if (pick) { beginDwell('confirm', CONFIRM_DWELL, pick, t); return; }
+    // 2. the most overdue track update
+    let due = null;
+    for (let i = 0; i < targets.length; i++) {
+      const tg = targets[i];
+      if (tg.tws && tg.nextUpdate <= t && (due === null || tg.nextUpdate < due.nextUpdate)) due = tg;
+    }
+    if (due) { beginDwell('track', TRACK_DWELL, due, t); return; }
+    // 3. search: the pattern only advances here
+    patternTime += SEARCH_DWELL * state.scanRate;
+    search.patternTime = patternTime;
+    const pattern = PATTERNS[state.scanPattern] || PATTERNS.raster;
+    pattern(patternTime, _azel);
+    const ci = cellIndexClamped(_azel.az, _azel.el);
+    if (ci !== searchCell) { searchCell = ci; search.hops++; }
+    cellCenter(ci, _azel);
+    search.az = _azel.az;
+    search.el = _azel.el;
+    beginDwell('search', SEARCH_DWELL, null, t);
+  }
+
+  function requestConfirmations(state, t) {
+    for (let i = 0; i < state.targets.length; i++) {
+      const tg = state.targets[i];
+      if (tg.detected && !tg.tws && !tg.tracked && !tg.confirmPending && t >= tg.cooldownUntil
+        && t - tg.lastSeen < CONFIRM_WINDOW_S && tg.lastSeen > tg.lastConfirmTry) {
+        tg.confirmPending = true;
+        tg.confirmRequested = t;
+        tg.lastConfirmTry = t;
+        logEvent('detect', tg.id, t);
+      }
+    }
+  }
+
+  function measureLoad(state, t) {
+    let s = 0, tr = 0, c = 0;
+    const from = t - LOAD_WINDOW;
+    for (let i = 0; i < manager.dwells.length; i++) {
+      const d = manager.dwells[i];
+      if (d.lane !== 0 || d.end < from) continue;
+      const len = Math.min(d.end, t) - Math.max(d.start, from);
+      if (len <= 0) continue;
+      if (d.type === 'search') s += len; else if (d.type === 'track') tr += len; else if (d.type === 'confirm') c += len;
+    }
+    const win = Math.min(LOAD_WINDOW, Math.max(0.5, t));
+    const st = manager.stats;
+    st.search = s / win; st.track = tr / win; st.confirm = c / win;
+    st.idle = Math.max(0, 1 - st.search - st.track - st.confirm);
+    let n = 0;
+    for (let i = 0; i < state.targets.length; i++) if (state.targets[i].tws) n++;
+    st.twsTracks = n;
+    const period = PATTERN_PERIOD[state.scanPattern] || 0;
+    st.frameS = period ? period / Math.max(0.05, st.search) / state.scanRate : 0;
+
+    // overload: the busiest track load allowed; beyond it the farthest TWS track is shed
+    if (st.track + st.confirm > state.trackLoadCap && n >= 2 && t - lastDrop > DROP_COOLDOWN_S && t > LOAD_WINDOW) {
+      let victim = null;
+      for (let i = 0; i < state.targets.length; i++) {
+        const tg = state.targets[i];
+        if (tg.tws && (victim === null || tg.range > victim.range)) victim = tg;
+      }
+      if (victim) { dropTrack(victim, 'overload', t); lastDrop = t; overloadUntil = t + 2; }
+    }
+    st.overload = t < overloadUntil;
+  }
+
+  function updateManager(state) {
+    const t = state.time;
+    if (!state.running) { search.dwell = Math.max(0, t - dwell.start); return; }
+    requestConfirmations(state, t);
+    if (t >= dwell.until) {
+      closeDwell(state, t);
+      startNextDwell(state, t);
+    }
+    if (dwell.type === 'track' || dwell.type === 'confirm') {
+      const tg = findTarget(state.targets, dwell.targetId);
+      if (tg) { search.az = tg.az; search.el = tg.el; }
+    }
+    search.dwell = t - dwell.start;
+    if (t - lastLoadCheck >= 0.1) { lastLoadCheck = t; measureLoad(state, t); prune(t); }
+  }
+
+  // ---- dedicated track quadrants (spatially split beams) --------------------------------------
   function releaseTarget(target, q) {
     if (target.trackedBy === q) {
       target.tracked = false;
@@ -293,11 +464,12 @@ export function createScheduler(elementsApi) {
 
   function updateTrack(beam, q, step, state) {
     const targets = state.targets;
+    const t = state.time;
     if (!trackActive[q]) {
       trackActive[q] = true;
       beam.targetId = null;
       beam.dwell = 0;
-      beam.lastUpdate = state.time;
+      beam.lastUpdate = t;
     }
     beam.dwell += step;
 
@@ -312,23 +484,28 @@ export function createScheduler(elementsApi) {
     if (target === null) {
       target = strongestUntracked(targets);
       if (target === null && beam.dwell >= ACQUIRE_FALLBACK_S) target = nearestBoresight(targets);
-      if (target !== null) assign(beam, q, target, state.time);
+      if (target !== null) assign(beam, q, target, t);
     }
 
     if (target !== null) {
       target.tracked = true;
       if (target.trackedBy === null) target.trackedBy = q;
-      if (state.time - beam.lastUpdate >= TRACK_UPDATE_S) {
+      if (t - beam.lastUpdate >= TRACK_UPDATE_S) {
         beam.az = target.az;
         beam.el = target.el;
-        beam.lastUpdate = state.time;
+        if (state.running) logDwell(1 + q, 'track', beam.lastUpdate, t, target.id);
+        beam.lastUpdate = t;
         beam.hops++;
       }
     } else {
       // Acquiring: orbit boresight until something is detected.
-      const w = ACQ_ORBIT_RATE * state.time;
+      const w = ACQ_ORBIT_RATE * t;
       beam.az = ACQ_ORBIT_RAD * Math.cos(w);
       beam.el = ACQ_ORBIT_RAD * Math.sin(w);
+      if (state.running && t - beam.lastUpdate >= TRACK_UPDATE_S) {
+        logDwell(1 + q, 'acquire', beam.lastUpdate, t, null);
+        beam.lastUpdate = t;
+      }
     }
   }
 
@@ -394,11 +571,18 @@ export function createScheduler(elementsApi) {
     let tracked = 0, detected = 0;
     const targets = state.targets;
     for (let i = 0; i < targets.length; i++) {
-      if (targets[i].tracked) tracked++;
+      if (targets[i].tracked || targets[i].tws) tracked++;
       if (targets[i].detected) detected++;
     }
     tel.tracked = tracked;
     tel.detected = detected;
+    const st = manager.stats;
+    tel.rmSearchPct = st.search * 100;
+    tel.rmTrackPct = st.track * 100;
+    tel.rmConfirmPct = st.confirm * 100;
+    tel.rmTracks = st.twsTracks;
+    tel.rmFrameS = st.frameS;
+    tel.rmOverload = st.overload;
   }
 
   function update(dt, state) {
@@ -415,8 +599,14 @@ export function createScheduler(elementsApi) {
 
     if (smask !== 0) {
       if (smask !== searchMask) { searchMask = smask; setQuadrants(search, smask); }
-      updateSearch(step, state);
+      finishBeam(search, state);     // gain is needed by the dwell outcome before re-pointing
+      updateManager(state);
       finishBeam(search, state);
+    } else if (dwell.type !== 'idle') {
+      dwell.type = 'idle';
+      search.trackDwell = false;
+      search.dwellType = 'search';
+      search.color = COLORS.search;
     }
 
     let primary = smask !== 0 ? search : null;
@@ -454,6 +644,9 @@ export function createScheduler(elementsApi) {
 
   function reset() {
     resetBeam(search);
+    search.trackDwell = false;
+    search.dwellType = 'search';
+    search.patternTime = 0;
     for (let q = 0; q < 4; q++) {
       resetBeam(tracks[q]);
       trackActive[q] = false;
@@ -461,15 +654,22 @@ export function createScheduler(elementsApi) {
     searchMask = 0;
     searchCell = -1;
     membership = -1;
+    patternTime = 0;
+    dwell.type = 'idle'; dwell.start = 0; dwell.until = 0; dwell.targetId = null;
+    manager.dwells.length = 0;
+    manager.events.length = 0;
+    Object.assign(manager.stats, { search: 0, track: 0, confirm: 0, idle: 0, twsTracks: 0, frameS: 0, overload: false });
+    overloadUntil = -Infinity; lastDrop = -Infinity; lastLoadCheck = -Infinity;
     if (lastState !== null) {
       lastState.beams.length = 0;
       const targets = lastState.targets;
       for (let i = 0; i < targets.length; i++) {
         targets[i].tracked = false;
         targets[i].trackedBy = null;
+        targets[i].tws = false;
       }
     }
   }
 
-  return { update, reset };
+  return { update, reset, manager };
 }
