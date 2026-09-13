@@ -110,8 +110,8 @@ h6 { font: 500 10px var(--mono); letter-spacing: 0.12em; color: var(--muted); te
 .warn { font: 600 10px var(--mono); letter-spacing: 0.1em; color: var(--red); border: 1px solid rgba(226, 75, 74, 0.5); padding: 6px 8px; border-radius: 3px; margin-bottom: 8px; animation: pulse 1s infinite; }
 .tel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
 .tel-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--line); }
-.tel-row .k { font: 500 9px var(--mono); letter-spacing: 0.1em; color: var(--dim); }
-.tel-row .v { font: 500 12px var(--mono); color: var(--text); }
+.tel-row .k { font: 500 9px var(--mono); letter-spacing: 0.1em; color: var(--dim); flex: 1 1 auto; min-width: 0; padding-right: 6px; }
+.tel-row .v { font: 500 12px var(--mono); color: var(--text); flex: 0 0 auto; min-width: 8.5ch; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .chart-wrap { margin-top: 12px; }
 .chart { margin-top: 6px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel2); }
 .chart canvas { display: block; }
