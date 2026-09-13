@@ -40,7 +40,7 @@ export function createStripChart(canvas) {
   function draw() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, H);
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.strokeStyle = getComputedStyle(canvas).getPropertyValue('--chart-grid').trim() || 'rgba(255,255,255,0.07)';
     ctx.lineWidth = 1;
     for (let i = 1; i < 4; i++) {
       const y = Math.round((H * i) / 4) + 0.5;

@@ -56,6 +56,7 @@ const en = {
   'dome.target': 'T{id} · {km} km · σ {rcs} m²',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Smaller text', 'font.larger': 'Larger text', 'font.reset': 'Reset text size to 100 %',
+  'theme.dark': 'DARK', 'theme.light': 'LIGHT', 'theme.title': 'Colour theme (the 3-D view stays dark: its glow is additive)',
 };
 
 const ru = {
@@ -109,6 +110,7 @@ const ru = {
   'dome.target': 'T{id} · {km} км · σ {rcs} м²',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Мельче текст', 'font.larger': 'Крупнее текст', 'font.reset': 'Сбросить размер текста на 100 %',
+  'theme.dark': 'ТЁМНАЯ', 'theme.light': 'СВЕТЛАЯ', 'theme.title': 'Цветовая тема (3D-вид остаётся тёмным: его свечение аддитивное)',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)
   'part.radome.name': 'Обтекатель',
