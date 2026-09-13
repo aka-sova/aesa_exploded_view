@@ -19,6 +19,11 @@ function baseline(s, api) {
   s.power = 60;
   s.scanRate = 1;
   s.selectedPart = null;
+  s.spacingLambda = 0.5;
+  s.taper = 0;
+  s.patternSearch = true;
+  s.patternTrack = true;
+  s.patternCuts = true;
 }
 
 const STEPS = [
@@ -28,6 +33,7 @@ const STEPS = [
   { id: 'trm', highlight: [], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); api.setViewMode('xray'); s.explodeTarget = 0.35; s.selectedPart = 'trm'; s.running = false; } },
   { id: 'steering', highlight: ['#inset', '[data-tel="hops"]'], apply(s, api) { baseline(s, api); api.setCameraPreset('front'); s.scanPattern = 'sector'; s.selectedPart = 'bsc'; s.running = true; } },
   { id: 'beamwidth', highlight: ['[data-tel="beamwidthDeg"]', '[data-tel="scanLossDb"]'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.scanPattern = 'sector'; s.running = true; } },
+  { id: 'pattern', highlight: ['#pattern-block'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.scanPattern = 'sector'; s.running = true; } },
   { id: 'pulses', highlight: ['#prf', '[data-tel="unambRangeKm"]'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.running = true; } },
   { id: 'dome', highlight: ['#scan-patterns'], apply(s, api) { baseline(s, api); api.setCameraPreset('dome'); s.running = true; } },
   { id: 'subarrays', highlight: ['#tiles'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.quadrantModes[3] = 'track'; s.running = true; } },
@@ -39,7 +45,7 @@ const STEPS = [
   { id: 'thermal', highlight: ['[data-tel="arrayTempC"]', '#prf', '#power'], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.prf = 4000; s.power = 100; s.selectedPart = 'coldplate'; s.running = true; } },
   { id: 'end', highlight: [], apply(s, api) { baseline(s, api); api.setCameraPreset('rear'); s.running = true; } },
 ];
-const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart'];
+const SNAPSHOT_KEYS = ['viewMode', 'cameraPreset', 'explodeTarget', 'scanPattern', 'failedFraction', 'jamming', 'nulling', 'running', 'prf', 'power', 'scanRate', 'selectedPart', 'spacingLambda', 'taper', 'patternSearch', 'patternTrack', 'patternCuts'];
 
 export function mountTutorial(state, api) {
   const card = $('tutorial'), viewport = $('viewport');

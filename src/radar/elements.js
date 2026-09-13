@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { COLORS } from '../sim/state.js';
+import { taperWeight } from './taper.js';
 
 export const N = 24;
 export const PITCH = 0.1;
@@ -138,6 +139,7 @@ export function buildElements(materials) {
   const qEl = new Float64Array(4);
   const qColor = new Int32Array(4);
   const qFlash = new Uint8Array(4);
+  let spacing = 0.5, taper = 0;
   const flashTimer = new Float64Array(4);
   const dirty = new Uint8Array(4);
   let explicitHighlight = null;   // from setQuadrantHighlight
@@ -173,6 +175,7 @@ export function buildElements(materials) {
     // Steering phase on the λ/2 lattice (k·d = π), independent of the scene pitch.
     const sx = Math.sin(qAz[q]) * Math.cos(qEl[q]);
     const sy = Math.sin(qEl[q]);
+    const kd = TWO_PI * spacing;
     if (active) _mode.setHex(qColor[q]);
 
     for (let iy = iy0; iy < iy0 + QUAD; iy++) {
@@ -186,10 +189,11 @@ export function buildElements(materials) {
           patches.setColorAt(i, _color);
           moduleMesh.setColorAt(i, _color);
         } else {
-          let phase = -Math.PI * ((ix - HALF) * sx + (iy - HALF) * sy);
+          let phase = -kd * ((ix - HALF) * sx + (iy - HALF) * sy);
           phase = Math.round(phase / PHASE_STEP) * PHASE_STEP;
           phase -= TWO_PI * Math.floor(phase / TWO_PI); // wrap to [0, 2π)
-          const lightness = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(phase));
+          const wgt = 0.35 + 0.65 * taperWeight(ix, taper) * taperWeight(iy, taper);
+          const lightness = (0.35 + 0.65 * (0.5 + 0.5 * Math.cos(phase))) * wgt;
           patches.setColorAt(i, _color.copy(_mode).multiplyScalar(lightness * gainE));
           moduleMesh.setColorAt(i, _color.copy(_mode).multiplyScalar(lightness * gainM));
         }
@@ -234,6 +238,8 @@ export function buildElements(materials) {
   function update(dt, state) {
     lastState = state;
     applyFailedFraction(state.failedFraction || 0);
+    const sp = state.spacingLambda || 0.5, tp = state.taper || 0;
+    if (sp !== spacing || tp !== taper) { spacing = sp; taper = tp; dirty.fill(1); }
 
     const beams = state.beams || EMPTY;
     for (let q = 0; q < 4; q++) {

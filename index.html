@@ -44,6 +44,17 @@
         <h6 data-i18n="sec.systems">03 RADAR SYSTEMS</h6>
         <ul id="parts-list"></ul>
       </section>
+      <section id="pattern-block">
+        <h6 data-i18n="pat.title">04 ANTENNA PATTERN</h6>
+        <label class="chk"><input type="checkbox" id="pat-search" /><span class="box"></span><span data-i18n="pat.search">SEARCH BEAM LOBE (3-D)</span></label>
+        <label class="chk"><input type="checkbox" id="pat-track" /><span class="box"></span><span data-i18n="pat.track">TRACK BEAM LOBES (3-D)</span></label>
+        <label class="chk"><input type="checkbox" id="pat-cuts" /><span class="box"></span><span data-i18n="pat.cuts">AZ / EL CUTS</span></label>
+        <div class="slider-row"><span class="k" data-i18n="pat.spacing">SPACING</span><input id="spacing" type="range" min="0.5" max="1" step="0.05" /><span id="spacing-val" class="v"></span></div>
+        <div class="slider-row"><span class="k" data-i18n="pat.taper">TAPER</span><input id="taper" type="range" min="0" max="100" step="5" /><span id="taper-val" class="v"></span></div>
+        <div id="pat-plot-wrap" class="chart"><canvas id="pattern-plot"></canvas></div>
+        <div id="pat-readout" class="micro"></div>
+        <div class="micro dim" data-i18n="pat.hint">PATTERN FROM ALL 576 ELEMENT STATES · 0 dB = FULL UNIFORM ARRAY · FLOOR −40 dB</div>
+      </section>
     </aside>
 
     <main id="viewport">

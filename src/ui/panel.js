@@ -24,6 +24,7 @@ const LEGEND = [
   ['▪', COLORS.signal, 'legend.rf'],
   ['▪', COLORS.control, 'legend.control'],
   ['▪', COLORS.standby, 'legend.standby'],
+  ['◗', 0x2fd6ff, 'legend.pattern'],
 ];
 // unit keys for parts whose `unit` is a plain English token
 const UNIT_KEY = { dB: 'unit.db', Hz: 'unit.hz', W: 'unit.w', kg: 'unit.kg', '°C': 'unit.c', '°': null, '': null };
@@ -133,6 +134,17 @@ export function mountPanel(state, api) {
     bind('power', () => state.power, (v) => { state.power = v; }, (v) => v + ' %'),
     bind('explode', () => Math.round(state.explodeTarget * 100), (v) => { state.explodeTarget = v / 100; }, (v) => v + ' %'),
   ];
+  const chk = (id, key) => {
+    const el = $(id);
+    el.checked = state[key];
+    el.onchange = () => { state[key] = el.checked; };
+    return () => { if (el.checked !== state[key]) el.checked = state[key]; };
+  };
+  const syncChecks = [chk('pat-search', 'patternSearch'), chk('pat-track', 'patternTrack'), chk('pat-cuts', 'patternCuts')];
+  syncSliders.push(
+    bind('spacing', () => state.spacingLambda, (v) => { state.spacingLambda = v; }, (v) => v.toFixed(2) + ' λ'),
+    bind('taper', () => Math.round(state.taper * 100), (v) => { state.taper = v / 100; }, (v) => v + ' %'),
+  );
   $('btn-fail').onclick = () => { state.failedFraction = state.failedFraction > 0 ? 0 : 0.15; };
   $('btn-jam').onclick = () => { state.jamming = !state.jamming; if (!state.jamming) state.nulling = false; };
   $('btn-null').onclick = () => { if (state.jamming) state.nulling = !state.nulling; };
@@ -191,6 +203,15 @@ export function mountPanel(state, api) {
     setText(startBtn, state.running ? t('ctl.stop') : t('ctl.start'));
     setClass(startBtn, 'active', state.running);
     for (const s of syncSliders) s();
+    for (const c of syncChecks) c();
+    setClass($('pat-plot-wrap'), 'hidden', !state.patternCuts);
+    {
+      const tm = state.telemetry;
+      let txt = t('pat.readout', { bw: tm.patternBwDeg.toFixed(1), sll: tm.patternSllDb.toFixed(1), peak: tm.patternPeakDb.toFixed(1) });
+      if (tm.gratingLobe) txt += ' · ' + t('pat.grating');
+      setText($('pat-readout'), txt);
+      setClass($('pat-readout'), 'amber', tm.gratingLobe);
+    }
 
     const roster = $('beam-roster');
     const lines = state.beams.map((b) => `<div class="row"><i style="background:${hex(b.color)}"></i>${rosterLine(b)}</div>`).join('');

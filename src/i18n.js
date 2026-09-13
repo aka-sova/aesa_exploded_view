@@ -56,6 +56,9 @@ const en = {
   'dome.target': 'T{id} · {km} km · σ {rcs} m²',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Smaller text', 'font.larger': 'Larger text', 'font.reset': 'Reset text size to 100 %',
+  'pat.title': '04 ANTENNA PATTERN', 'pat.search': 'SEARCH BEAM LOBE (3-D)', 'pat.track': 'TRACK BEAM LOBES (3-D)', 'pat.cuts': 'AZ / EL CUTS',
+  'pat.spacing': 'SPACING', 'pat.taper': 'TAPER', 'pat.readout': 'BW {bw}° · SLL {sll} dB · PEAK {peak} dB', 'pat.grating': 'GRATING LOBE',
+  'pat.hint': 'PATTERN FROM ALL 576 ELEMENT STATES · 0 dB = FULL UNIFORM ARRAY · FLOOR −40 dB', 'legend.pattern': 'PATTERN LOBE (dB SURFACE)',
   'theme.dark': 'DARK', 'theme.light': 'LIGHT', 'theme.title': 'Colour theme (the 3-D view stays dark: its glow is additive)',
 };
 
@@ -110,6 +113,9 @@ const ru = {
   'dome.target': 'T{id} · {km} км · σ {rcs} м²',
   'lang.en': 'EN', 'lang.ru': 'RU',
   'font.smaller': 'Мельче текст', 'font.larger': 'Крупнее текст', 'font.reset': 'Сбросить размер текста на 100 %',
+  'pat.title': '04 ДИАГРАММА НАПРАВЛЕННОСТИ', 'pat.search': 'ЛЕПЕСТОК ОБЗОРНОГО ЛУЧА (3D)', 'pat.track': 'ЛЕПЕСТКИ ЛУЧЕЙ СОПР. (3D)', 'pat.cuts': 'СЕЧЕНИЯ ПО АЗ / УМ',
+  'pat.spacing': 'ШАГ', 'pat.taper': 'ВЗВЕШ.', 'pat.readout': 'ШЛ {bw}° · УБЛ {sll} дБ · МАКС {peak} дБ', 'pat.grating': 'ДИФР. ЛЕПЕСТОК',
+  'pat.hint': 'ДИАГРАММА ПО СОСТОЯНИЮ ВСЕХ 576 ЭЛЕМЕНТОВ · 0 дБ = ПОЛНАЯ РАВНОМЕРНАЯ РЕШЁТКА · НИЗ −40 дБ', 'legend.pattern': 'ЛЕПЕСТОК ДН (ПОВЕРХНОСТЬ дБ)',
   'theme.dark': 'ТЁМНАЯ', 'theme.light': 'СВЕТЛАЯ', 'theme.title': 'Цветовая тема (3D-вид остаётся тёмным: его свечение аддитивное)',
 
   // parts catalogue — name / description / design / metric (units come from unit.* keys via parts.js)

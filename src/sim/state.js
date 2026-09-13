@@ -33,6 +33,7 @@ const defaultTelemetry = () => ({
   hops: 0, dwellMs: 0, pulsesPerDwell: 0,
   dutyCycle: 0.012, pulseWidthUs: 10, peakPowerKw: 0, avgPowerKw: 0, unambRangeKm: 125,
   eirpLossDb: 0, arrayTempC: 22, pulsesSent: 0, echoes: 0, mainbeamJam: false,
+  patternBwDeg: 4.2, patternSllDb: -13.3, patternPeakDb: 0, gratingLobe: false,
 });
 
 export class SimState {
@@ -50,6 +51,11 @@ export class SimState {
   failedFraction = 0;
   jamming = false;
   nulling = false;
+  spacingLambda = 0.5;        // element spacing in wavelengths (0.5..1.0); > 0.5 admits grating lobes
+  taper = 0;                  // amplitude taper 0..1 (uniform .. heavy)
+  patternSearch = true;       // draw the search beam's pattern lobe
+  patternTrack = true;        // draw track beams' pattern lobes
+  patternCuts = true;         // show the az/el cut plot
   selectedPart = null;
   hoveredPart = null;
   hoveredQuadrant = null;

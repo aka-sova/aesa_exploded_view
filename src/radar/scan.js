@@ -350,8 +350,9 @@ export function createScheduler(elementsApi) {
     const qs = beam.quadrants;
     let used = 0;
     for (let i = 0; i < qs.length; i++) used += activeCount(qs[i], state);
-    beam.widthDeg = BASE_BW * Math.sqrt(ELEMENT_TOTAL / (ELEMENTS_PER_QUADRANT * qs.length)) / cosT;
-    beam.gain = (used / ELEMENT_TOTAL) * (state.power / 100) * Math.pow(cosT, 1.3) * (1 - state.failedFraction);
+    const spacing = state.spacingLambda || 0.5, taper = state.taper || 0;
+    beam.widthDeg = BASE_BW * Math.sqrt(ELEMENT_TOTAL / (ELEMENTS_PER_QUADRANT * qs.length)) / cosT * (0.5 / spacing) * (1 + 0.5 * taper);
+    beam.gain = (used / ELEMENT_TOTAL) * (state.power / 100) * Math.pow(cosT, 1.3) * (1 - state.failedFraction) * (1 - 0.5 * taper);
   }
 
   function rebuildBeams(state, smask, tmask) {
