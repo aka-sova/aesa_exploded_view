@@ -40,6 +40,16 @@ npm run build      # production bundle in dist/
 Visual exaggerations are stated in the HUD: beams drawn at 2× true width, 1 of ~100 pulses
 drawn, dwells ~10× slow.
 
+## Antenna pattern
+
+The **04 ANTENNA PATTERN** block in the left sidebar draws the array's live radiation pattern:
+a translucent dB surface (0 dB = full uniform array, floor −40 dB) recomputed from all 576 element
+states — steering phase, taper weight, failed modules, standby quadrants — on every beam hop, one
+lobe per beam. Checkboxes toggle the search-beam lobe, the track-beam lobes and the az/el cut
+plot; the **SPACING** slider (0.5–1.0 λ) admits grating lobes, the **TAPER** slider trades
+sidelobe level for beamwidth and gain. The readout shows the measured −3 dB beamwidth, peak
+sidelobe level and peak gain, and flags a grating lobe.
+
 ## Tutorial
 
 The **TUTORIAL** button in the top bar starts a 16-station guided tour. Each station configures
@@ -85,6 +95,8 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/radar/assembly.js` | Procedural component stack, explode, view modes, signal paths |
 | `src/radar/beams.js` | Beam frusta, pulse rings, echoes, jammer |
 | `src/radar/dome.js` | Coverage dome cells, pattern path, target markers |
+| `src/radar/pattern.js`, `src/radar/taper.js` | Live array-factor pattern (3-D lobes, az/el cuts, metrics) |
+| `src/ui/patternplot.js` | 2-D pattern-cut plot |
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
 | `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
 | `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |

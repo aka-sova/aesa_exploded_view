@@ -13,6 +13,8 @@ import { buildAssembly } from './radar/assembly.js';
 import { createScheduler, PATTERNS, PATTERN_PERIOD, DOME_RADIUS, dirFromAzEl, cellIndex } from './radar/scan.js';
 import { createBeams } from './radar/beams.js';
 import { createDome } from './radar/dome.js';
+import { createPatternView } from './radar/pattern.js';
+import { createPatternPlot } from './ui/patternplot.js';
 import { createTargets, updateTargets, markIlluminated } from './sim/targets.js';
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
@@ -76,6 +78,7 @@ scene.add(assembly.root);
 const scheduler = createScheduler(assembly.elements);
 const beams = createBeams(scene, assembly.elements);
 const dome = createDome(scene);
+const pattern = createPatternView(scene, assembly.elements);
 state.targets = createTargets();
 
 // ---- post-processing ---------------------------------------------------------------------
@@ -183,6 +186,7 @@ const api = {
     scheduler.reset();
     beams.reset();
     dome.reset();
+    pattern.reset();
     state.targets = createTargets();
     lastHops = -1;
   },
@@ -200,6 +204,8 @@ onThemeChange((th) => {
   scene.fog.color.set(bg);
 });
 const chart = createStripChart(document.getElementById('strip-chart'));
+const patternPlot = createPatternPlot(document.getElementById('pattern-plot'));
+let patternVersion = -1;
 
 // ---- resize ------------------------------------------------------------------------------------
 function resize() {
@@ -240,6 +246,13 @@ function tick(dt) {
   assembly.update(dt, state);
   beams.update(dt, state);
   dome.update(dt, state);
+  pattern.update(dt, state);
+  if (pattern.version !== patternVersion) {
+    patternVersion = pattern.version;
+    const m = pattern.metrics;
+    t.patternBwDeg = m.beamwidthDeg; t.patternSllDb = m.sidelobeDb; t.patternPeakDb = m.peakDb; t.gratingLobe = m.gratingLobe;
+    if (state.patternCuts) patternPlot.draw(pattern.cutAz, pattern.cutEl, m);
+  }
 
   const search = state.beams.length && state.beams[0].type === 'search' ? state.beams[0] : null;
   if (search && search.hops !== lastHops) { if (lastHops >= 0) assembly.flashHop(); lastHops = search.hops; }
@@ -307,5 +320,5 @@ function frame() {
 }
 
 assembly.setViewMode(state.viewMode);
-window.__lab = { state, renderer, scene, camera, assembly, beams, dome, scheduler, stats, api, tutorial, fontSize, theme, step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) tick(dt); } };
+window.__lab = { state, renderer, scene, camera, assembly, beams, dome, scheduler, stats, api, tutorial, fontSize, theme, pattern, step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) tick(dt); } };
 frame();
