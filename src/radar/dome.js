@@ -9,6 +9,7 @@ import {
 } from './scan.js';
 import { rangeKm } from '../sim/targets.js';
 import { COLORS } from '../sim/state.js';
+import { t } from '../i18n.js';
 
 const MAX_TARGETS = 5;
 const PATH_POINTS = 512;
@@ -255,31 +256,31 @@ export function createDome(scene) {
 
   function updateTargets(state) {
     for (let i = 0; i < MAX_TARGETS; i++) {
-      const t = state.targets[i];
+      const tg = state.targets[i];
       const label = labels[i];
-      if (!t || (!t.detected && !t.tracked)) {
+      if (!tg || (!tg.detected && !tg.tracked)) {
         _m.makeScale(0, 0, 0);
         markers.setMatrixAt(i, _m);
         brackets[i].visible = false;
         label.obj.visible = false;
         continue;
       }
-      dirFromAzEl(t.az, t.el, _dir).multiplyScalar(t.range);
-      const sc = 1 + 0.6 * Math.sin(Math.PI * (1 - t.ping));
+      dirFromAzEl(tg.az, tg.el, _dir).multiplyScalar(tg.range);
+      const sc = 1 + 0.6 * Math.sin(Math.PI * (1 - tg.ping));
       _s.setScalar(sc);
       _q.identity();
       markers.setMatrixAt(i, _m.compose(_dir, _q, _s));
-      if (t.tracked) {
+      if (tg.tracked) {
         markers.setColorAt(i, AMBER);
         brackets[i].visible = true;
         brackets[i].position.copy(_dir);
         brackets[i].lookAt(0, 0, 0);
         label.obj.visible = true;
         label.obj.position.copy(_dir).y += 0.4;
-        const text = `T${t.id} · ${rangeKm(t).toFixed(1)} km · σ ${t.rcs} m²`;
+        const text = t('dome.target', { id: tg.id, km: rangeKm(tg).toFixed(1), rcs: tg.rcs });
         if (text !== label.text) { label.text = text; label.el.textContent = text; }
       } else {
-        const age = Math.max(0, state.time - t.lastSeen);
+        const age = Math.max(0, state.time - tg.lastSeen);
         markers.setColorAt(i, _c.copy(WHITE).multiplyScalar(Math.max(0.15, 1 - age / 12)));
         brackets[i].visible = false;
         label.obj.visible = false;

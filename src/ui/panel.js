@@ -1,12 +1,13 @@
 // Binds the HUD DOM to SimState. Reads state every frame (DOM is only touched when text or
-// class actually changes) and writes state from input events.
-import { SCAN_PATTERNS, SCAN_LABELS, VIEW_MODES, VIEW_LABELS, CAMERA_PRESETS, QUADRANT_MODES, COLORS } from '../sim/state.js';
+// class actually changes) and writes state from input events. All user-facing strings come
+// from i18n so the language toggle can relabel everything in place.
+import { SCAN_PATTERNS, VIEW_MODES, CAMERA_PRESETS, QUADRANT_MODES, COLORS } from '../sim/state.js';
 import { PARTS, PART_BY_ID } from '../data/parts.js';
 import { PATTERN_PERIOD } from '../radar/scan.js';
+import { t, tPart, getLang, setLang, onLangChange, applyStatic, LANGS } from '../i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const hex = (n) => '#' + n.toString(16).padStart(6, '0');
-const VIEW_BTN = { assembled: 'ASSEMBLED', cutaway: 'CUTAWAY', xray: 'X-RAY', signal: 'SIGNAL PATH' };
 const GLYPHS = {
   sector: '<path d="M2 8H26M22 4l4 4-4 4M6 4L2 8l4 4"/>',
   raster: '<path d="M2 3h24L2 8h24L2 13h24"/>',
@@ -15,24 +16,26 @@ const GLYPHS = {
   agile: '<circle cx="4" cy="4" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="20" cy="3" r="1.5"/><circle cx="25" cy="11" r="1.5"/><circle cx="9" cy="8" r="1.5"/>',
 };
 const LEGEND = [
-  ['◯', COLORS.search, 'SEARCH BEAM / TX PULSE'],
-  ['◯', COLORS.track, 'TRACK BEAM'],
-  ['●', COLORS.detect, 'ECHO / DETECTION'],
-  ['◆', COLORS.detect, 'TARGET (BRACKET = TRACKED)'],
-  ['▪', COLORS.fault, 'FAULT / JAMMER'],
-  ['▪', COLORS.signal, 'RF PATH'],
-  ['▪', COLORS.control, 'STEERING COMMANDS (DASHED)'],
-  ['▪', COLORS.standby, 'STANDBY'],
+  ['◯', COLORS.search, 'legend.search'],
+  ['◯', COLORS.track, 'legend.track'],
+  ['●', COLORS.detect, 'legend.echo'],
+  ['◆', COLORS.detect, 'legend.target'],
+  ['▪', COLORS.fault, 'legend.fault'],
+  ['▪', COLORS.signal, 'legend.rf'],
+  ['▪', COLORS.control, 'legend.control'],
+  ['▪', COLORS.standby, 'legend.standby'],
 ];
+// unit keys for parts whose `unit` is a plain English token
+const UNIT_KEY = { dB: 'unit.db', Hz: 'unit.hz', W: 'unit.w', kg: 'unit.kg', '°C': 'unit.c', '°': null, '': null };
 const TEL_FMT = {
   beamAzDeg: (v) => v.toFixed(1) + '°', beamElDeg: (v) => v.toFixed(1) + '°',
   steerAngleDeg: (v) => v.toFixed(1) + '°', beamwidthDeg: (v) => v.toFixed(2) + '°',
-  scanLossDb: (v) => '−' + v.toFixed(1) + ' dB', prf: (v) => v + ' Hz',
-  unambRangeKm: (v) => v.toFixed(1) + ' km', dutyCycle: (v) => (v * 100).toFixed(1) + ' %',
-  peakPowerKw: (v) => v.toFixed(2) + ' kW', avgPowerKw: (v) => (v * 1000).toFixed(0) + ' W',
+  scanLossDb: (v) => '−' + v.toFixed(1) + ' ' + t('unit.db'), prf: (v) => v + ' ' + t('unit.hz'),
+  unambRangeKm: (v) => v.toFixed(1) + ' ' + t('unit.km'), dutyCycle: (v) => (v * 100).toFixed(1) + ' %',
+  peakPowerKw: (v) => v.toFixed(2) + ' ' + t('unit.kw'), avgPowerKw: (v) => (v * 1000).toFixed(0) + ' ' + t('unit.w'),
   activeElements: (v) => String(v), activeBeams: (v) => String(v), tracked: (v) => String(v),
-  hops: (v) => String(v), dwellMs: (v) => v.toFixed(0) + ' ms', pulsesPerDwell: (v) => String(v),
-  eirpLossDb: (v) => '−' + v.toFixed(1) + ' dB', arrayTempC: (v) => v.toFixed(1) + ' °C',
+  hops: (v) => String(v), dwellMs: (v) => v.toFixed(0) + ' ' + t('unit.ms'), pulsesPerDwell: (v) => String(v),
+  eirpLossDb: (v) => '−' + v.toFixed(1) + ' ' + t('unit.db'), arrayTempC: (v) => v.toFixed(1) + ' °C',
   pulsesSent: (v) => String(v), echoes: (v) => String(v), detected: (v) => String(v),
 };
 
@@ -41,12 +44,14 @@ function setClass(el, cls, on) { if (el && el.classList.contains(cls) !== on) el
 function setStyle(el, prop, v) { if (el && el.__s?.[prop] !== v) { (el.__s ||= {})[prop] = v; el.style[prop] = v; } }
 
 export function mountPanel(state, api) {
+  applyStatic();
+
   // ---- build static lists -----------------------------------------------------------------
   const viewBtns = {};
   for (const m of VIEW_MODES) {
     const b = document.createElement('button');
     b.className = 'btn';
-    b.innerHTML = `<span class="ico">${VIEW_MODES.indexOf(m) + 1}</span>${VIEW_BTN[m]}`;
+    b.innerHTML = `<span class="ico">${VIEW_MODES.indexOf(m) + 1}</span><span class="lbl"></span>`;
     b.onclick = () => api.setViewMode(m);
     $('view-modes').appendChild(b);
     viewBtns[m] = b;
@@ -55,7 +60,6 @@ export function mountPanel(state, api) {
   for (const c of CAMERA_PRESETS) {
     const b = document.createElement('button');
     b.className = 'seg-btn';
-    b.textContent = c.toUpperCase();
     b.onclick = () => api.setCameraPreset(c);
     $('camera-presets').appendChild(b);
     camBtns[c] = b;
@@ -63,7 +67,7 @@ export function mountPanel(state, api) {
   const partItems = {};
   for (const p of PARTS) {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="code">${p.code}</span><span class="name">${p.name}</span><span class="arrow">↗</span>`;
+    li.innerHTML = `<span class="code">${p.code}</span><span class="name"></span><span class="arrow">↗</span>`;
     li.onclick = () => { state.selectedPart = state.selectedPart === p.id ? null : p.id; };
     li.onpointerenter = () => { state.hoveredPart = p.id; };
     li.onpointerleave = () => { if (state.hoveredPart === p.id) state.hoveredPart = null; };
@@ -74,12 +78,11 @@ export function mountPanel(state, api) {
   for (const p of SCAN_PATTERNS) {
     const b = document.createElement('button');
     b.className = 'pat-btn';
-    b.innerHTML = `<svg viewBox="0 0 28 16" width="28" height="16" fill="none" stroke="currentColor" stroke-width="1.4">${GLYPHS[p]}</svg><span>${SCAN_LABELS[p]}</span>`;
+    b.innerHTML = `<svg viewBox="0 0 28 16" width="28" height="16" fill="none" stroke="currentColor" stroke-width="1.4">${GLYPHS[p]}</svg><span></span>`;
     b.onclick = () => { state.scanPattern = p; };
     $('scan-patterns').appendChild(b);
     patBtns[p] = b;
   }
-  $('legend').innerHTML = LEGEND.map(([g, c, t]) => `<span class="chip"><i style="color:${hex(c)}">${g}</i>${t}</span>`).join('');
   const tiles = [];
   for (let q = 0; q < 4; q++) {
     const d = document.createElement('div');
@@ -94,6 +97,24 @@ export function mountPanel(state, api) {
     $('tiles').appendChild(d);
     tiles.push(d);
   }
+  const langBtns = {};
+  for (const b of $('lang-toggle').querySelectorAll('[data-lang]')) {
+    langBtns[b.dataset.lang] = b;
+    b.onclick = () => setLang(b.dataset.lang);
+  }
+
+  // Everything built above that carries translated text is (re)labelled here.
+  let shownPart = undefined;
+  function relabel() {
+    for (const m of VIEW_MODES) viewBtns[m].querySelector('.lbl').textContent = t(`view.${m}`);
+    for (const c of CAMERA_PRESETS) camBtns[c].textContent = t(`cam.${c}`);
+    for (const p of PARTS) partItems[p.id].querySelector('.name').textContent = tPart(p, 'name');
+    for (const p of SCAN_PATTERNS) patBtns[p].querySelector('span').textContent = t(`pattern.${p}`);
+    $('legend').innerHTML = LEGEND.map(([g, c, k]) => `<span class="chip"><i style="color:${hex(c)}">${g}</i>${t(k)}</span>`).join('');
+    shownPart = undefined;
+  }
+  relabel();
+  onLangChange(relabel);
 
   // ---- controls ---------------------------------------------------------------------------
   const startBtn = $('btn-start');
@@ -108,7 +129,7 @@ export function mountPanel(state, api) {
   };
   const syncSliders = [
     bind('scan-rate', () => state.scanRate, (v) => { state.scanRate = v; }, (v) => v.toFixed(2) + '×'),
-    bind('prf', () => state.prf, (v) => { state.prf = v; }, (v) => v + ' Hz'),
+    bind('prf', () => state.prf, (v) => { state.prf = v; }, (v) => v + ' ' + t('unit.hz')),
     bind('power', () => state.power, (v) => { state.power = v; }, (v) => v + ' %'),
     bind('explode', () => Math.round(state.explodeTarget * 100), (v) => { state.explodeTarget = v / 100; }, (v) => v + ' %'),
   ];
@@ -121,21 +142,20 @@ export function mountPanel(state, api) {
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
     if (e.code === 'Space') { e.preventDefault(); toggleRun(); }
     else if (e.key >= '1' && e.key <= '4') api.setViewMode(VIEW_MODES[Number(e.key) - 1]);
-    else if (e.key === 'e' || e.key === 'E') state.explodeTarget = state.explodeTarget > 0.5 ? 0 : 1;
+    else if (e.code === 'KeyE') state.explodeTarget = state.explodeTarget > 0.5 ? 0 : 1;
   });
 
   // ---- per-frame update -------------------------------------------------------------------
   const pill = $('status-pill');
   const tel = document.querySelectorAll('[data-tel]');
   const insp = { code: $('insp-code'), name: $('insp-name'), desc: $('insp-desc'), design: $('insp-design'), mlabel: $('insp-metric-label'), mval: $('insp-metric-value'), munit: $('insp-metric-unit') };
-  let shownPart = undefined;
 
   function statusPill() {
-    const t = state.telemetry;
-    if (t.arrayTempC > 80) return ['OVERTEMP', 'amber'];
-    if (state.jamming) return state.nulling ? ['NULLED', 'teal'] : ['JAMMED', 'red'];
-    if (state.failedFraction > 0) return [`DEGRADED −${(-20 * Math.log10(1 - state.failedFraction)).toFixed(1)} dB`, 'amber'];
-    return state.running ? ['RADIATING', 'teal'] : ['SYSTEM READY', 'grey'];
+    const tm = state.telemetry;
+    if (tm.arrayTempC > 80) return [t('status.overtemp'), 'amber'];
+    if (state.jamming) return state.nulling ? [t('status.nulled'), 'teal'] : [t('status.jammed'), 'red'];
+    if (state.failedFraction > 0) return [t('status.degraded', { db: (-20 * Math.log10(1 - state.failedFraction)).toFixed(1) }), 'amber'];
+    return state.running ? [t('status.radiating'), 'teal'] : [t('status.ready'), 'grey'];
   }
 
   function rosterLine(b) {
@@ -143,20 +163,21 @@ export function mountPanel(state, api) {
     if (b.type === 'search') {
       const period = PATTERN_PERIOD[state.scanPattern];
       let where;
-      if (state.scanPattern === 'raster') where = `BAR ${Math.floor(((state.time * state.scanRate) % 16) / 2) + 1}/8`;
-      else if (state.scanPattern === 'agile') where = b.trackDwell ? 'TRACK DWELL' : `HOP #${b.hops}`;
+      if (state.scanPattern === 'raster') where = t('roster.bar', { n: Math.floor(((state.time * state.scanRate) % 16) / 2) + 1 });
+      else if (state.scanPattern === 'agile') where = b.trackDwell ? t('roster.trackDwell') : t('roster.hop', { n: b.hops });
       else where = `${Math.round((((state.time * state.scanRate) % period) / period) * 100)} %`;
       const pps = (2 + (8 * Math.log(state.prf / 200)) / Math.log(20)).toFixed(1);
-      return `B${b.id}  SEARCH · ${qs} · ${state.scanPattern.toUpperCase()} ${where} · ${b.widthDeg.toFixed(1)}° · ${pps} PPS`;
+      return t('roster.search', { id: b.id, qs, pattern: t(`patternShort.${state.scanPattern}`), where, width: b.widthDeg.toFixed(1), pps });
     }
-    const tgt = b.targetId === null ? 'ACQUIRING' : `→ T${b.targetId} · DWELL ${b.dwell.toFixed(1)} s`;
-    return `B${b.id}  TRACK · ${qs} · ${tgt} · ${b.widthDeg.toFixed(1)}°`;
+    const tgt = b.targetId === null ? t('roster.acquiring') : t('roster.onTarget', { id: b.targetId, s: b.dwell.toFixed(1) });
+    return t('roster.track', { id: b.id, qs, tgt, width: b.widthDeg.toFixed(1) });
   }
 
   function update() {
     const [ptxt, pcls] = statusPill();
     setText(pill, ptxt);
     for (const c of ['grey', 'teal', 'amber', 'red']) setClass(pill, c, c === pcls);
+    for (const l of LANGS) setClass(langBtns[l], 'active', getLang() === l);
 
     for (const m of VIEW_MODES) setClass(viewBtns[m], 'active', state.viewMode === m);
     for (const c of CAMERA_PRESETS) setClass(camBtns[c], 'active', state.cameraPreset === c);
@@ -165,9 +186,9 @@ export function mountPanel(state, api) {
       setClass(partItems[p.id], 'hover', state.hoveredPart === p.id);
     }
     for (const p of SCAN_PATTERNS) setClass(patBtns[p], 'active', state.scanPattern === p);
-    setText($('vp-subtitle'), `${VIEW_LABELS[state.viewMode]} / 576 T/R MODULES / 4 SUBARRAYS`);
+    setText($('vp-subtitle'), t('vp.subtitle', { view: t(`viewLabel.${state.viewMode}`) }));
     setClass($('idle-chip'), 'hidden', state.running || state.time > 0);
-    setText(startBtn, state.running ? 'STOP RADIATING' : 'START RADIATING');
+    setText(startBtn, state.running ? t('ctl.stop') : t('ctl.start'));
     setClass(startBtn, 'active', state.running);
     for (const s of syncSliders) s();
 
@@ -178,17 +199,17 @@ export function mountPanel(state, api) {
     // subarray tiles: front view unless the camera is behind the array
     const behind = api.isCameraBehind();
     const order = behind ? [3, 2, 1, 0] : [2, 3, 0, 1];
-    setText($('tiles-caption'), behind ? 'REAR VIEW (−Z) · MIRRORED' : 'FRONT VIEW (+Z)');
+    setText($('tiles-caption'), behind ? t('sub.rear') : t('sub.front'));
     for (let q = 0; q < 4; q++) {
       const d = tiles[q], mode = state.quadrantModes[q];
       setStyle(d, 'order', String(order.indexOf(q)));
       for (const m of QUADRANT_MODES) setClass(d, m, mode === m);
-      setText(d.children[1], mode === 'standby' ? 'STBY' : mode.toUpperCase());
+      setText(d.children[1], t(`mode.${mode}`));
       const beam = state.beams.find((b) => b.type === 'track' && b.quadrants[0] === q);
-      setText(d.children[2], mode === 'track' ? (beam && beam.targetId !== null ? `→ T${beam.targetId}` : 'ACQ') : '');
+      setText(d.children[2], mode === 'track' ? (beam && beam.targetId !== null ? `→ T${beam.targetId}` : t('tile.acq')) : '');
     }
     setClass($('btn-fail'), 'active', state.failedFraction > 0);
-    setText($('fail-readout'), state.failedFraction > 0 ? `EIRP −${(-20 * Math.log10(1 - state.failedFraction)).toFixed(1)} dB · SIDELOBE FLOOR ≈ −35 dB` : 'ALL 576 MODULES NOMINAL');
+    setText($('fail-readout'), state.failedFraction > 0 ? t('fail.readout', { db: (-20 * Math.log10(1 - state.failedFraction)).toFixed(1) }) : t('fail.nominal'));
     setClass($('btn-jam'), 'active', state.jamming);
     setClass($('btn-null'), 'active', state.nulling);
     $('btn-null').disabled = !state.jamming;
@@ -197,12 +218,12 @@ export function mountPanel(state, api) {
     if (shownPart !== state.selectedPart) {
       shownPart = state.selectedPart;
       const p = shownPart ? PART_BY_ID[shownPart] : null;
-      setText(insp.code, p ? `SYS · ${p.code}` : 'SYS · —');
-      setText(insp.name, p ? p.name : 'Select a component');
-      setText(insp.desc, p ? p.description : 'Click a part in the 3-D view or in the systems list to inspect it.');
-      setText(insp.design, p ? p.design : '');
-      setText(insp.mlabel, p ? p.metric : '');
-      setText(insp.munit, p ? p.unit : '');
+      setText(insp.code, p ? t('insp.sys', { code: p.code }) : t('insp.sysNone'));
+      setText(insp.name, p ? tPart(p, 'name') : t('insp.none'));
+      setText(insp.desc, p ? tPart(p, 'description') : t('insp.noneDesc'));
+      setText(insp.design, p ? tPart(p, 'design') : '');
+      setText(insp.mlabel, p ? tPart(p, 'metric') : '');
+      setText(insp.munit, p ? (UNIT_KEY[p.unit] ? t(UNIT_KEY[p.unit]) : p.unit) : '');
     }
     if (shownPart) {
       const p = PART_BY_ID[shownPart];

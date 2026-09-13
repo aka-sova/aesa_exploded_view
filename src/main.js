@@ -16,6 +16,7 @@ import { createDome } from './radar/dome.js';
 import { createTargets, updateTargets, markIlluminated } from './sim/targets.js';
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
+import { tPart, onLangChange } from './i18n.js';
 
 const PRESETS = {
   rear: { pos: [8.5, 6, -9], tgt: [0, 1.6, 2.5] },
@@ -89,12 +90,14 @@ const partLabels = [];
 for (const p of PARTS) {
   const el = document.createElement('div');
   el.className = 'part-label';
-  el.textContent = `${p.code}  ${p.name.toUpperCase()}`;
   const obj = new CSS2DObject(el);
   obj.position.set(1.5, 0.9, 0);
   assembly.groups[p.id].add(obj);
-  partLabels.push({ id: p.id, el, obj, opacity: -1, active: false });
+  partLabels.push({ id: p.id, el, obj, opacity: -1, active: false, part: p });
 }
+const relabelParts = () => { for (const l of partLabels) l.el.textContent = `${l.part.code}  ${tPart(l.part, 'name').toUpperCase()}`; };
+relabelParts();
+onLangChange(relabelParts);
 const explodeAxis = (() => {
   const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([1.55, 1.0, 2, 1.55, 1.0, -6], 3));
   const l = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.12, gapSize: 0.1, transparent: true, opacity: 0.15, depthWrite: false, fog: false }));
