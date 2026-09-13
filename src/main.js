@@ -17,6 +17,7 @@ import { createTargets, updateTargets, markIlluminated } from './sim/targets.js'
 import { mountPanel } from './ui/panel.js';
 import { createStripChart } from './ui/telemetry.js';
 import { mountTutorial } from './ui/tutorial.js';
+import { mountFontSize } from './ui/fontsize.js';
 import { tPart, onLangChange } from './i18n.js';
 
 const PRESETS = {
@@ -189,6 +190,7 @@ const api = {
 };
 const panel = mountPanel(state, api);
 const tutorial = mountTutorial(state, api);
+const fontSize = mountFontSize();
 const chart = createStripChart(document.getElementById('strip-chart'));
 
 // ---- resize ------------------------------------------------------------------------------------
@@ -297,5 +299,5 @@ function frame() {
 }
 
 assembly.setViewMode(state.viewMode);
-window.__lab = { state, renderer, scene, camera, assembly, beams, dome, scheduler, stats, api, tutorial, step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) tick(dt); } };
+window.__lab = { state, renderer, scene, camera, assembly, beams, dome, scheduler, stats, api, tutorial, fontSize, step: (dt = 1 / 60, n = 1) => { for (let i = 0; i < n; i++) tick(dt); } };
 frame();

@@ -51,6 +51,12 @@ and adaptive nulling, to duty cycle and heat. Navigate with Next / Back or ← �
 restores the settings you had before. Texts live in `src/i18n.tutorial.js` (English and Russian);
 stations are defined in `src/ui/tutorial.js`.
 
+## Text size
+
+The **A− / 100% / A+** control in the top bar scales the whole HUD between 80 % and 140 % (the 3-D
+viewport takes whatever space remains). The choice is remembered per browser; click the percentage
+to reset.
+
 ## Languages
 
 The HUD is available in **English** and **Russian**; the EN / RU toggle sits in the top bar next
@@ -75,6 +81,7 @@ parts catalogue is translated per field (`part.<id>.name|description|design|metr
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
 | `src/i18n.js`, `src/i18n.tutorial.js` | English / Russian dictionaries, `t()`, language toggle |
 | `src/ui/tutorial.js` | Guided tour: stations, scene setup, highlights, navigation |
+| `src/ui/fontsize.js` | HUD text-size control (root font-size, rem-based layout) |
 
 `?dpr=1` in the URL forces a 1× pixel ratio for slower GPUs. `window.__lab` exposes the state
 and modules for debugging; `__lab.step(dt, n)` advances the simulation deterministically.
