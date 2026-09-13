@@ -9,45 +9,52 @@
 <body>
   <div id="app">
     <header id="topbar">
-      <div class="wordmark"><span class="dot"></span>AESA <span class="dim">/ X-BAND</span></div>
-      <div class="crumbs">ARRAY SYSTEMS <span class="sep">/</span> VIRTUAL TEST CELL <b>01</b></div>
-      <div class="right"><span id="status-pill" class="pill grey">SYSTEM READY</span><span class="lab">LAB / 001</span></div>
+      <div class="wordmark"><span class="dot"></span><span data-i18n="top.wordmark">AESA</span> <span class="dim" data-i18n="top.band">/ X-BAND</span></div>
+      <div class="crumbs"><span data-i18n="top.crumbs1">ARRAY SYSTEMS</span> <span class="sep">/</span> <span data-i18n="top.crumbs2">VIRTUAL TEST CELL</span> <b>01</b></div>
+      <div class="right">
+        <span id="status-pill" class="pill grey">SYSTEM READY</span>
+        <div id="lang-toggle" class="seg lang">
+          <button class="seg-btn" data-lang="en" data-i18n="lang.en">EN</button>
+          <button class="seg-btn" data-lang="ru" data-i18n="lang.ru">RU</button>
+        </div>
+        <span class="lab" data-i18n="top.lab">LAB / 001</span>
+      </div>
     </header>
 
     <aside id="left">
       <section>
-        <h6>01 VISUALIZATION</h6>
+        <h6 data-i18n="sec.view">01 VISUALIZATION</h6>
         <div id="view-modes" class="btn-list"></div>
       </section>
       <section>
-        <h6>02 CAMERA</h6>
+        <h6 data-i18n="sec.camera">02 CAMERA</h6>
         <div id="camera-presets" class="seg"></div>
       </section>
       <section>
-        <h6>03 RADAR SYSTEMS</h6>
+        <h6 data-i18n="sec.systems">03 RADAR SYSTEMS</h6>
         <ul id="parts-list"></ul>
       </section>
     </aside>
 
     <main id="viewport">
       <div class="vp-head">
-        <div class="eyebrow">X-BAND / ACTIVE ELECTRONICALLY SCANNED ARRAY</div>
-        <h1>Aperture, exposed.</h1>
+        <div class="eyebrow" data-i18n="vp.eyebrow">X-BAND / ACTIVE ELECTRONICALLY SCANNED ARRAY</div>
+        <h1 data-i18n="vp.headline">Aperture, exposed.</h1>
         <div id="vp-subtitle" class="micro"></div>
       </div>
-      <div id="idle-chip" class="chip">PRESS SPACE OR START TO RADIATE</div>
+      <div id="idle-chip" class="chip" data-i18n="vp.idle">PRESS SPACE OR START TO RADIATE</div>
       <div class="vp-foot">
         <div id="beam-roster"></div>
         <div id="legend"></div>
-        <div class="micro dim">BEAM DRAWN 2× TRUE WIDTH · 1 OF 100 PULSES DRAWN · DWELLS ~10× SLOW · COVERAGE AZ ±70° EL −10…50° · 5° CELLS</div>
-        <div class="hint">DRAG TO ORBIT · SCROLL TO ZOOM · CLICK TO INSPECT</div>
+        <div class="micro dim" data-i18n="vp.exag">BEAM DRAWN 2× TRUE WIDTH · 1 OF 100 PULSES DRAWN · DWELLS ~10× SLOW · COVERAGE AZ ±70° EL −10…50° · 5° CELLS</div>
+        <div class="hint" data-i18n="vp.hint">DRAG TO ORBIT · SCROLL TO ZOOM · CLICK TO INSPECT</div>
       </div>
-      <div id="inset"><span class="micro">APERTURE · FROM FRONT</span></div>
+      <div id="inset"><span class="micro" data-i18n="vp.inset">APERTURE · FROM FRONT</span></div>
     </main>
 
     <aside id="right">
       <section id="inspector">
-        <h6>04 COMPONENT INSPECTOR</h6>
+        <h6 data-i18n="insp.title">04 COMPONENT INSPECTOR</h6>
         <div class="insp-code"><span id="insp-code">SYS · —</span><span class="live-dot"></span></div>
         <h2 id="insp-name">Select a component</h2>
         <p id="insp-desc">Click a part in the 3-D view or in the systems list to inspect it.</p>
@@ -58,33 +65,33 @@
         </div>
       </section>
       <section id="telemetry">
-        <h6><span class="live-dot on"></span>LIVE TELEMETRY <span class="dim right-note">10 Hz</span></h6>
-        <div id="jam-warning" class="warn hidden">MAINBEAM JAM — RECEIVER SATURATED</div>
+        <h6><span class="live-dot on"></span><span data-i18n="tel.title">LIVE TELEMETRY</span> <span class="dim right-note" data-i18n="tel.rate">10 Hz</span></h6>
+        <div id="jam-warning" class="warn hidden" data-i18n="tel.jam">MAINBEAM JAM — RECEIVER SATURATED</div>
         <div class="tel-grid">
-          <div class="tel-row"><span class="k">BEAM AZ</span><span class="v" data-tel="beamAzDeg"></span></div>
-          <div class="tel-row"><span class="k">BEAM EL</span><span class="v" data-tel="beamElDeg"></span></div>
-          <div class="tel-row"><span class="k">STEER ANGLE</span><span class="v" data-tel="steerAngleDeg"></span></div>
-          <div class="tel-row"><span class="k">BEAMWIDTH</span><span class="v" data-tel="beamwidthDeg"></span></div>
-          <div class="tel-row"><span class="k">SCAN LOSS</span><span class="v" data-tel="scanLossDb"></span></div>
-          <div class="tel-row"><span class="k">PRF</span><span class="v" data-tel="prf"></span></div>
-          <div class="tel-row"><span class="k">UNAMBIG. RANGE</span><span class="v" data-tel="unambRangeKm"></span></div>
-          <div class="tel-row"><span class="k">DUTY CYCLE</span><span class="v" data-tel="dutyCycle"></span></div>
-          <div class="tel-row"><span class="k">PEAK POWER</span><span class="v" data-tel="peakPowerKw"></span></div>
-          <div class="tel-row"><span class="k">AVG POWER</span><span class="v" data-tel="avgPowerKw"></span></div>
-          <div class="tel-row"><span class="k">ACTIVE ELEMENTS</span><span class="v" data-tel="activeElements"></span></div>
-          <div class="tel-row"><span class="k">BEAMS</span><span class="v" data-tel="activeBeams"></span></div>
-          <div class="tel-row"><span class="k">TRACKS</span><span class="v" data-tel="tracked"></span></div>
-          <div class="tel-row"><span class="k">DETECTIONS</span><span class="v" data-tel="detected"></span></div>
-          <div class="tel-row"><span class="k">BEAM HOPS</span><span class="v" data-tel="hops"></span></div>
-          <div class="tel-row"><span class="k">DWELL</span><span class="v" data-tel="dwellMs"></span></div>
-          <div class="tel-row"><span class="k">PULSES / DWELL</span><span class="v" data-tel="pulsesPerDwell"></span></div>
-          <div class="tel-row"><span class="k">EIRP LOSS</span><span class="v" data-tel="eirpLossDb"></span></div>
-          <div class="tel-row"><span class="k">ARRAY TEMP</span><span class="v" data-tel="arrayTempC"></span></div>
-          <div class="tel-row"><span class="k">PULSES SENT</span><span class="v" data-tel="pulsesSent"></span></div>
-          <div class="tel-row"><span class="k">ECHOES</span><span class="v" data-tel="echoes"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.beamAzDeg">BEAM AZ</span><span class="v" data-tel="beamAzDeg"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.beamElDeg">BEAM EL</span><span class="v" data-tel="beamElDeg"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.steerAngleDeg">STEER ANGLE</span><span class="v" data-tel="steerAngleDeg"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.beamwidthDeg">BEAMWIDTH</span><span class="v" data-tel="beamwidthDeg"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.scanLossDb">SCAN LOSS</span><span class="v" data-tel="scanLossDb"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.prf">PRF</span><span class="v" data-tel="prf"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.unambRangeKm">UNAMBIG. RANGE</span><span class="v" data-tel="unambRangeKm"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.dutyCycle">DUTY CYCLE</span><span class="v" data-tel="dutyCycle"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.peakPowerKw">PEAK POWER</span><span class="v" data-tel="peakPowerKw"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.avgPowerKw">AVG POWER</span><span class="v" data-tel="avgPowerKw"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.activeElements">ACTIVE ELEMENTS</span><span class="v" data-tel="activeElements"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.activeBeams">BEAMS</span><span class="v" data-tel="activeBeams"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.tracked">TRACKS</span><span class="v" data-tel="tracked"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.detected">DETECTIONS</span><span class="v" data-tel="detected"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.hops">BEAM HOPS</span><span class="v" data-tel="hops"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.dwellMs">DWELL</span><span class="v" data-tel="dwellMs"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.pulsesPerDwell">PULSES / DWELL</span><span class="v" data-tel="pulsesPerDwell"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.eirpLossDb">EIRP LOSS</span><span class="v" data-tel="eirpLossDb"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.arrayTempC">ARRAY TEMP</span><span class="v" data-tel="arrayTempC"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.pulsesSent">PULSES SENT</span><span class="v" data-tel="pulsesSent"></span></div>
+          <div class="tel-row"><span class="k" data-i18n="tel.echoes">ECHOES</span><span class="v" data-tel="echoes"></span></div>
         </div>
         <div class="chart-wrap">
-          <div class="micro dim">BEAM AZ <i class="sw teal"></i> · EL <i class="sw amber"></i> · TEMP <i class="sw red"></i> · 60 s</div>
+          <div class="micro dim"><span data-i18n="chart.az">BEAM AZ</span> <i class="sw teal"></i> · <span data-i18n="chart.el">EL</span> <i class="sw amber"></i> · <span data-i18n="chart.temp">TEMP</span> <i class="sw red"></i> · <span data-i18n="chart.window">60 s</span></div>
           <div class="chart"><canvas id="strip-chart"></canvas></div>
         </div>
       </section>
@@ -92,50 +99,50 @@
 
     <footer id="bottombar">
       <div class="block">
-        <h6>RADAR CONTROL <span class="dim right-note">CTRL / SPACE</span></h6>
+        <h6><span data-i18n="ctl.title">RADAR CONTROL</span> <span class="dim right-note" data-i18n="ctl.keys">CTRL / SPACE</span></h6>
         <div class="row">
           <button id="btn-start" class="primary">START RADIATING</button>
-          <button id="btn-reset" class="ghost">RESET</button>
+          <button id="btn-reset" class="ghost" data-i18n="ctl.reset">RESET</button>
         </div>
       </div>
       <div class="block wide">
-        <h6>SCAN PATTERN</h6>
+        <h6 data-i18n="scan.title">SCAN PATTERN</h6>
         <div id="scan-patterns" class="pat-row"></div>
         <div class="slider-row">
-          <span class="k">SCAN RATE</span>
+          <span class="k" data-i18n="scan.rate">SCAN RATE</span>
           <input id="scan-rate" type="range" min="0.25" max="3" step="0.05" />
           <span id="scan-rate-val" class="v"></span>
         </div>
-        <div class="micro dim">BEAM HOPS IN µs — NO INERTIA · A REAL AESA TIME-SHARES THE FULL APERTURE BETWEEN SEARCH AND TRACK DWELLS</div>
+        <div class="micro dim" data-i18n="scan.hint">BEAM HOPS IN µs — NO INERTIA · A REAL AESA TIME-SHARES THE FULL APERTURE BETWEEN SEARCH AND TRACK DWELLS</div>
       </div>
       <div class="block">
-        <h6>EMISSION</h6>
-        <div class="slider-row"><span class="k">PRF</span><input id="prf" type="range" min="200" max="4000" step="50" /><span id="prf-val" class="v"></span></div>
-        <div class="slider-row"><span class="k">POWER</span><input id="power" type="range" min="10" max="100" step="1" /><span id="power-val" class="v"></span></div>
-        <div class="slider-row"><span class="k">EXPLODE</span><input id="explode" type="range" min="0" max="100" step="1" /><span id="explode-val" class="v"></span></div>
-        <div class="micro dim">Rᵤ = c / 2·PRF · 12 W GaN MODULES</div>
+        <h6 data-i18n="emit.title">EMISSION</h6>
+        <div class="slider-row"><span class="k" data-i18n="emit.prf">PRF</span><input id="prf" type="range" min="200" max="4000" step="50" /><span id="prf-val" class="v"></span></div>
+        <div class="slider-row"><span class="k" data-i18n="emit.power">POWER</span><input id="power" type="range" min="10" max="100" step="1" /><span id="power-val" class="v"></span></div>
+        <div class="slider-row"><span class="k" data-i18n="emit.explode">EXPLODE</span><input id="explode" type="range" min="0" max="100" step="1" /><span id="explode-val" class="v"></span></div>
+        <div class="micro dim" data-i18n="emit.hint">Rᵤ = c / 2·PRF · 12 W GaN MODULES</div>
       </div>
       <div class="block">
-        <h6>SUBARRAY TASKING <span id="tiles-caption" class="dim right-note"></span></h6>
+        <h6><span data-i18n="sub.title">SUBARRAY TASKING</span> <span id="tiles-caption" class="dim right-note"></span></h6>
         <div id="tiles"></div>
-        <div class="micro dim">SPLITTING THE FACE GIVES SIMULTANEOUS BEAMS BUT EACH LOSES 6 dB EIRP PER HALVING AND DOUBLES ITS BEAMWIDTH</div>
+        <div class="micro dim" data-i18n="sub.hint">SPLITTING THE FACE GIVES SIMULTANEOUS BEAMS BUT EACH LOSES 6 dB EIRP PER HALVING AND DOUBLES ITS BEAMWIDTH</div>
       </div>
       <div class="block">
-        <h6>FAILURE SIMULATION <span class="dim right-note">CONTROLLED EVENT</span></h6>
+        <h6><span data-i18n="fail.title">FAILURE SIMULATION</span> <span class="dim right-note" data-i18n="fail.note">CONTROLLED EVENT</span></h6>
         <div class="row">
-          <button id="btn-fail" class="danger">FAIL 15 % OF T/R MODULES</button>
+          <button id="btn-fail" class="danger" data-i18n="fail.modules">FAIL 15 % OF T/R MODULES</button>
         </div>
         <div class="row">
-          <button id="btn-jam" class="danger">SIMULATE JAMMING</button>
-          <button id="btn-null" class="ghost" disabled>ADAPTIVE NULL</button>
+          <button id="btn-jam" class="danger" data-i18n="fail.jam">SIMULATE JAMMING</button>
+          <button id="btn-null" class="ghost" data-i18n="fail.null" disabled>ADAPTIVE NULL</button>
         </div>
         <div id="fail-readout" class="micro dim"></div>
       </div>
     </footer>
 
     <div id="footline">
-      <span>CONCEPTUAL ENGINEERING VISUALIZATION</span>
-      <span>X-BAND 9.5 GHz / λ 31.6 mm / <b id="foot-calls">0</b> CALLS / <b id="foot-fps">0</b> FPS</span>
+      <span data-i18n="foot.left">CONCEPTUAL ENGINEERING VISUALIZATION</span>
+      <span><span data-i18n="foot.band">X-BAND 9.5 GHz / λ 31.6 mm /</span> <b id="foot-calls">0</b> <span data-i18n="foot.calls">CALLS /</span> <b id="foot-fps">0</b> <span data-i18n="foot.fps">FPS</span></span>
     </div>
   </div>
   <script type="module" src="/src/main.js"></script>

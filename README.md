@@ -40,6 +40,14 @@ npm run build      # production bundle in dist/
 Visual exaggerations are stated in the HUD: beams drawn at 2× true width, 1 of ~100 pulses
 drawn, dwells ~10× slow.
 
+## Languages
+
+The HUD is available in **English** and **Russian**; the EN / RU toggle sits in the top bar next
+to the status pill. The choice is remembered in `localStorage` and the initial language follows
+the browser locale. All strings live in `src/i18n.js` — add a language by adding a dictionary
+there and its code to `LANGS`; static HTML is labelled with `data-i18n="key"` and the
+parts catalogue is translated per field (`part.<id>.name|description|design|metric`).
+
 ## Layout
 
 | File | Purpose |
@@ -54,6 +62,7 @@ drawn, dwells ~10× slow.
 | `src/radar/beams.js` | Beam frusta, pulse rings, echoes, jammer |
 | `src/radar/dome.js` | Coverage dome cells, pattern path, target markers |
 | `src/ui/panel.js`, `src/ui/telemetry.js` | HUD bindings and the strip chart |
+| `src/i18n.js` | English / Russian dictionaries, `t()`, language toggle |
 
 `?dpr=1` in the URL forces a 1× pixel ratio for slower GPUs. `window.__lab` exposes the state
 and modules for debugging; `__lab.step(dt, n)` advances the simulation deterministically.
